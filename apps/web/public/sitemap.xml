@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Final production domain must be confirmed by the employer.
+  Only public routes belong here; dashboard/admin/login are intentionally absent.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://sabatarkhis.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://sabatarkhis.com/services</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://sabatarkhis.com/services/clearance-from-customs</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://sabatarkhis.com/services/customs-document-review</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://sabatarkhis.com/services/order-registration-guidance</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://sabatarkhis.com/services/import-export-guidance</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://sabatarkhis.com/services/hs-code-review</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://sabatarkhis.com/clearance-process</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://sabatarkhis.com/documents-guide</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://sabatarkhis.com/articles</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://sabatarkhis.com/faq</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://sabatarkhis.com/about</loc><changefreq>yearly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://sabatarkhis.com/contact</loc><changefreq>yearly</changefreq><priority>0.6</priority></url>
+</urlset>

@@ -1,0 +1,239 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Vazirmatn", "Segoe UI", Tahoma, sans-serif;
+
+  --color-brand-50: #eff5fa;
+  --color-brand-100: #dbe8f3;
+  --color-brand-200: #b9d1e7;
+  --color-brand-300: #8cb2d4;
+  --color-brand-400: #578cbb;
+  --color-brand-500: #356fa1;
+  --color-brand-600: #245885;
+  --color-brand-700: #1d466b;
+  --color-brand-800: #183a58;
+  --color-brand-900: #142f47;
+  --color-brand-950: #0c1e2f;
+
+  --color-accent-50: #edfdf8;
+  --color-accent-100: #cffaee;
+  --color-accent-500: #14b8a6;
+  --color-accent-600: #0d9488;
+  --color-accent-700: #0f766e;
+
+  --shadow-card: 0 1px 2px rgb(15 40 60 / 0.04), 0 8px 24px -12px rgb(15 40 60 / 0.18);
+}
+
+/*
+ * Vazirmatn, in the four weights the interface uses (400/500/600/700). Files
+ * live in /public/fonts so the preload tags in index.html hit the exact same
+ * URL the CSS asks for (no second, hashed copy).
+ */
+@font-face {
+  font-family: "Vazirmatn";
+  src: url("/fonts/Vazirmatn-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Vazirmatn";
+  src: url("/fonts/Vazirmatn-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Vazirmatn";
+  src: url("/fonts/Vazirmatn-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Vazirmatn";
+  src: url("/fonts/Vazirmatn-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #f6f8fb;
+  color: var(--color-slate-800);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  /* Vazirmatn's ss01 renders Latin/Arabic numerals with Persian digit shapes. */
+  font-feature-settings: "ss01";
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent-600);
+  outline-offset: 2px;
+}
+
+/*
+ * Leading icons: centre a 1rem / 0.875rem icon on the first line of the text
+ * beside it, whatever that line's height is. `1lh` follows the inherited
+ * line-height, so 11px helper text and 14px body text both line up.
+ */
+.lead-icon {
+  margin-top: calc(0.5lh - 0.5rem);
+  flex: none;
+}
+
+.lead-icon-sm {
+  margin-top: calc(0.5lh - 0.4375rem);
+  flex: none;
+}
+
+/*
+ * Latin/numeric content (tracking codes, phone numbers, dates) keeps its own
+ * left-to-right run, but must inherit the surrounding alignment: setting
+ * `direction: ltr` here made `text-align: start` resolve to the LEFT edge, so
+ * counters in cards and numbers in table cells drifted away from their labels.
+ */
+.num {
+  unicode-bidi: isolate;
+  /* Codes, phone numbers and dates in equal-width digits, aligned like text. */
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Form fields keep Latin digits and type from the left edge, so a mobile number
+ * or tariff code grows left-to-right exactly like the typed keystrokes, while
+ * ltr/ltr digits stay equal-width. Persian text elsewhere is untouched.
+ */
+input,
+textarea,
+select {
+  /* Typed values stay Latin digits; only display text uses Persian shapes. */
+  font-feature-settings: normal;
+  font-variant-numeric: tabular-nums;
+}
+
+input.num,
+textarea.num {
+  direction: ltr;
+  text-align: left;
+}
+
+/* Every enabled control should read as clickable. */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+summary,
+label[for],
+select:not(:disabled) {
+  cursor: pointer;
+}
+
+button:disabled,
+select:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+
+
+/*
+ * Balanced line breaks: without this a short tail like «خواهد شد» can land alone
+ * on the last line. Browsers balance short blocks and fall back to normal
+ * wrapping once a block gets long, so body copy still wraps naturally.
+ */
+h1,
+h2,
+h3,
+h4,
+p,
+li,
+dd,
+figcaption {
+  text-wrap: balance;
+}
+
+.prose-fa p {
+  margin-bottom: 1rem;
+  line-height: 2.1;
+}
+
+.prose-fa p:last-child {
+  margin-bottom: 0;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Subtle confirmation when a section first becomes visible (no movement). */
+.reveal {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+}
+
+/* Jalali date picker (react-multi-date-picker) tuned to the site palette. */
+.rmdp-wrapper,
+.rmdp-container {
+  font-family: var(--font-sans);
+}
+
+.rmdp-container {
+  width: 100%;
+}
+
+.rmdp-wrapper {
+  border-radius: 1rem;
+  box-shadow: 0 18px 45px -18px rgb(15 40 60 / 0.4);
+  z-index: 60;
+}
+
+.rmdp-week-day {
+  color: var(--color-brand-700);
+}
+
+.rmdp-day span {
+  border-radius: 0.55rem;
+}
+
+.rmdp-day.rmdp-selected span:not(.highlight) {
+  background-color: var(--color-brand-700) !important;
+  box-shadow: 0 2px 8px rgb(24 58 88 / 0.35);
+}
+
+.rmdp-day:not(.rmdp-selected):not(.rmdp-disabled):not(.rmdp-day-hidden) span:hover {
+  background-color: var(--color-brand-100) !important;
+  color: var(--color-brand-900) !important;
+}
+
+.rmdp-arrow {
+  border-color: var(--color-brand-700);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Private application areas must not be indexed.
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /login
+Disallow: /register
+Disallow: /requests/
+
+Sitemap: https://sabatarkhis.com/sitemap.xml

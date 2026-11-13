@@ -1,0 +1,40 @@
+# Production stack: PostgreSQL + the API image that also serves the built SPA.
+#
+#   cp .env.production.example .env.production   # then fill in real values
+#   docker compose -f docker-compose.prod.yml up -d --build
+#   docker compose -f docker-compose.prod.yml exec app npm run user:create -- \
+#     --mobile 09xxxxxxxxx --name "نام مدیر" --role ADMIN
+#
+# The app port is bound to loopback only: terminate HTTPS with nginx/Caddy in
+# front of it (see docs/deployment.md) so the Secure session cookie works.
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    env_file: .env.production
+    volumes:
+      - saba_tarkhis_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env.production
+    ports:
+      - "127.0.0.1:4000:4000"
+    volumes:
+      - saba_tarkhis_storage:/var/lib/saba-tarkhis/storage
+      - saba_tarkhis_quarantine:/var/lib/saba-tarkhis/quarantine
+
+volumes:
+  saba_tarkhis_data:
+  saba_tarkhis_storage:
+  saba_tarkhis_quarantine:

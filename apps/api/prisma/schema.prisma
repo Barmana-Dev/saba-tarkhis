@@ -1,0 +1,291 @@
+// Saba Tarkhis — Prisma schema
+// PostgreSQL is the required database (see docs/decisions.md).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  EXPERT
+  ADMIN
+}
+
+enum ApplicantType {
+  INDIVIDUAL
+  COMPANY
+}
+
+enum ProcedureType {
+  IMPORT
+  EXPORT
+  TRANSIT
+  OTHER
+  UNKNOWN
+}
+
+enum TransportMode {
+  SEA
+  ROAD
+  AIR
+  RAIL
+  UNKNOWN
+}
+
+enum RequestStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  NEED_MORE_INFO
+  QUOTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum CommentVisibility {
+  PUBLIC
+  INTERNAL
+}
+
+/// Result of the malware scan for an uploaded document.
+enum ScanStatus {
+  PENDING
+  CLEAN
+  INFECTED
+  ERROR
+  SKIPPED
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum ContactStatus {
+  NEW
+  IN_PROGRESS
+  RESOLVED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  fullName     String
+  mobile       String   @unique
+  email        String?  @unique
+  passwordHash String
+  role         Role     @default(CUSTOMER)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  sessions         Session[]
+  requests         ClearanceRequest[]      @relation("RequestOwner")
+  assignedRequests ClearanceRequest[]      @relation("RequestExpert")
+  documents        RequestDocument[]
+  comments         RequestComment[]
+  statusChanges    RequestStatusHistory[]
+  auditLogs        AuditLog[]
+
+  @@index([role])
+}
+
+/// Server-side sessions. Only hashes of the session token and CSRF token are stored.
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  csrfHash  String
+  userId    String
+  expiresAt DateTime
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model ClearanceRequest {
+  id                 String        @id @default(cuid())
+  trackingCode       String        @unique
+  userId             String
+  applicantType      ApplicantType @default(INDIVIDUAL)
+  applicantName      String?
+  preferredContact   String?
+  goodsDescription   String
+  category           String?
+  hsCode             String?
+  procedureType      ProcedureType @default(UNKNOWN)
+  originCountry      String?
+  destinationCountry String?
+  customsLocation    String?
+  transportMode      TransportMode @default(UNKNOWN)
+  quantity           String?
+  quantityUnit       String?
+  estimatedValue     String?
+  currency           String?
+  cargoStatus        String?
+  notes              String?
+  quoteNote          String?
+  status             RequestStatus @default(SUBMITTED)
+  assignedExpertId   String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  user           User                   @relation("RequestOwner", fields: [userId], references: [id])
+  assignedExpert User?                  @relation("RequestExpert", fields: [assignedExpertId], references: [id])
+  documents      RequestDocument[]
+  comments       RequestComment[]
+  statusHistory  RequestStatusHistory[]
+
+  @@index([userId, status])
+  @@index([status, createdAt])
+  @@index([assignedExpertId])
+  @@index([createdAt])
+}
+
+model RequestDocument {
+  id           String     @id @default(cuid())
+  requestId    String
+  uploadedById String
+  fileName     String
+  storageKey   String     @unique
+  mimeType     String
+  fileSize     Int
+  /// Documents are only downloadable when the scan result is CLEAN.
+  scanStatus   ScanStatus @default(PENDING)
+  scanEngine   String?
+  scannedAt    DateTime?
+  createdAt    DateTime   @default(now())
+
+  request    ClearanceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  uploadedBy User             @relation(fields: [uploadedById], references: [id])
+
+  @@index([requestId])
+}
+
+model RequestComment {
+  id         String            @id @default(cuid())
+  requestId  String
+  authorId   String
+  body       String
+  visibility CommentVisibility @default(PUBLIC)
+  createdAt  DateTime          @default(now())
+
+  request ClearanceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  author  User             @relation(fields: [authorId], references: [id])
+
+  @@index([requestId, visibility])
+}
+
+model RequestStatusHistory {
+  id          String         @id @default(cuid())
+  requestId   String
+  fromStatus  RequestStatus?
+  toStatus    RequestStatus
+  changedById String
+  reason      String?
+  createdAt   DateTime       @default(now())
+
+  request   ClearanceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  changedBy User             @relation(fields: [changedById], references: [id])
+
+  @@index([requestId, createdAt])
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  excerpt     String
+  body        String
+  isPublished Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isPublished, sortOrder])
+}
+
+model ArticleCategory {
+  id       String    @id @default(cuid())
+  name     String
+  slug     String    @unique
+  articles Article[]
+}
+
+model Article {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  title       String
+  excerpt     String
+  body        String
+  categoryId  String?
+  coverImage  String?
+  status      ContentStatus @default(DRAFT)
+  sourceName  String?
+  sourceUrl   String?
+  publishedAt DateTime?
+  reviewedAt  DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  category ArticleCategory? @relation(fields: [categoryId], references: [id])
+
+  @@index([status, publishedAt])
+  @@index([categoryId])
+}
+
+model Faq {
+  id          String   @id @default(cuid())
+  question    String
+  answer      String
+  sortOrder   Int      @default(0)
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isPublished, sortOrder])
+}
+
+model ContactMessage {
+  id        String        @id @default(cuid())
+  name      String
+  mobile    String
+  subject   String
+  message   String
+  status    ContactStatus @default(NEW)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([status, createdAt])
+}
+
+model Setting {
+  key   String
+  value String
+
+  @@id([key])
+}
+
+/// Append-only audit trail for privileged operations.
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
