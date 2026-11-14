@@ -34,8 +34,7 @@
 │   ├── api-spec.md             # قرارداد API
 │   ├── decisions.md            # تصمیم‌ها، محدودیت‌ها و موارد نیازمند تأیید
 │   ├── deployment.md           # راهنمای استقرار Production، nginx، بکاپ
-│   ├── traceability.md         # ماتریس نیازمندی‌ها، تست‌ها و تأیید انتشار
-│   └── SabaTarkhis_FullStack_React_Node_Intern_Brief.md
+│   └── traceability.md         # ماتریس نیازمندی‌ها، تست‌ها و تأیید انتشار
 ├── docker-compose.yml          # PostgreSQL محلی (توسعه)
 ├── docker-compose.prod.yml     # استقرار: Postgres + ایمیج API/SPA
 ├── Dockerfile                  # بیلد تک‌ایمیجی API + web
