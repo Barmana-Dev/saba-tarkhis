@@ -31,10 +31,11 @@ services:
     ports:
       - "127.0.0.1:4000:4000"
     volumes:
-      - saba_tarkhis_storage:/var/lib/saba-tarkhis/storage
-      - saba_tarkhis_quarantine:/var/lib/saba-tarkhis/quarantine
+      # One volume for both storage and quarantine: the scanned file is moved
+      # from quarantine into storage, which must stay on the same filesystem
+      # (a cross-volume rename fails with EXDEV).
+      - saba_tarkhis_files:/var/lib/saba-tarkhis
 
 volumes:
   saba_tarkhis_data:
-  saba_tarkhis_storage:
-  saba_tarkhis_quarantine:
+  saba_tarkhis_files:

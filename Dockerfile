@@ -15,6 +15,16 @@ COPY apps/api/src ./src
 COPY apps/api/scripts ./scripts
 RUN npx prisma generate && npm run build
 
+# ---- Production dependencies only -----------------------------------------
+# tsc, vitest, supertest, tsx, @types/* and oxlint stay out of the runtime image.
+FROM node:24-bookworm-slim AS api-deps
+WORKDIR /app/apps/api
+COPY apps/api/package.json apps/api/package-lock.json ./
+COPY apps/api/prisma ./prisma
+RUN npm ci --omit=dev \
+ && npx prisma generate \
+ && npm cache clean --force
+
 # ---- Web build -------------------------------------------------------------
 FROM node:24-bookworm-slim AS web-build
 WORKDIR /app/apps/web
@@ -28,14 +38,16 @@ FROM node:24-bookworm-slim AS runtime
 ENV NODE_ENV=production
 
 # Production refuses to boot without CLAMAV_ENABLED=true, so the real clamscan
-# binary (and its signatures) must be present in the image.
+# binary (and its signatures) must be present in the image. Signatures are
+# refreshed while the container runs (see scripts/docker-entrypoint.sh), not
+# only at build time.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends clamav \
  && rm -rf /var/lib/apt/lists/* \
- && (freshclam --quiet || echo "freshclam failed; run it again after start")
+ && (freshclam --quiet || echo "freshclam failed; the entrypoint retries at start")
 
 WORKDIR /app/apps/api
-COPY --from=api-build /app/apps/api/node_modules ./node_modules
+COPY --from=api-deps /app/apps/api/node_modules ./node_modules
 COPY --from=api-build /app/apps/api/dist ./dist
 COPY --from=api-build /app/apps/api/prisma ./prisma
 COPY --from=api-build /app/apps/api/scripts ./scripts
@@ -43,10 +55,11 @@ COPY --from=api-build /app/apps/api/package.json ./
 # WEB_DIST_DIR default is ../web/dist relative to the API working directory.
 COPY --from=web-build /app/apps/web/dist /app/apps/web/dist
 
-RUN mkdir -p /var/lib/saba-tarkhis/storage /var/lib/saba-tarkhis/quarantine \
+RUN chmod +x ./scripts/docker-entrypoint.sh \
+ && mkdir -p /var/lib/saba-tarkhis/storage /var/lib/saba-tarkhis/quarantine \
  && chmod 700 /var/lib/saba-tarkhis/storage /var/lib/saba-tarkhis/quarantine
 
 EXPOSE 4000
 
-# Migrations run before the server starts; both are idempotent.
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/index.js"]
+ENTRYPOINT ["./scripts/docker-entrypoint.sh"]
+CMD []
