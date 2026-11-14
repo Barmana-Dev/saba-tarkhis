@@ -127,6 +127,12 @@ docker compose -f docker-compose.prod.yml up -d --build
 - ایمیج نهایی `clamscan` و امضاها را دارد. نبود امضا در بیلد مشکلی ایجاد نمی‌کند:
   `scripts/docker-entrypoint.sh` هنگام اجرا هر ۶ ساعت (`CLAMAV_UPDATE_INTERVAL_SECONDS`)
   `freshclam` را اجرا می‌کند و سپس migrations و سرور را بالا می‌آورد.
+- اگر روی همان ماشین دیتابیس توسعه (`docker compose up -d db`) را هم دارید، برای پروژهٔ production
+  نام جدا بدهید (`docker compose -p saba-prod -f docker-compose.prod.yml …`) تا سرویس `db` و
+  پورت ۵۴۳۲ محلی دست‌نخورده بمانند.
+- موتور Prisma با `binaryTargets = ["native", "debian-openssl-3.0.x"]` ساخته می‌شود؛ اگر ایمیج
+  پایه‌ای با OpenSSL دیگر استفاده کنید، این فهرست را هم‌راستا کنید (در غیر این صورت خطای
+  "could not locate the Query Engine" هنگام اجرا دیده می‌شود).
 - **تأیید تشخیص واقعی بدافزار (اجباری پیش از انتشار):**
   `docker compose -f docker-compose.prod.yml exec app npm run scan:verify` — باید فایل تست
   EICAR را تشخیص دهد؛ اگر «CLEAN» برگشت، امضاها کهنه/ناقص هستند.

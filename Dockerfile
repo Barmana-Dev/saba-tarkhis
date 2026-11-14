@@ -8,9 +8,11 @@
 FROM node:24-bookworm-slim AS api-build
 WORKDIR /app/apps/api
 COPY apps/api/package.json apps/api/package-lock.json ./
+# The postinstall hook runs `prisma generate`, so the schema must be present
+# before `npm ci`.
+COPY apps/api/prisma ./prisma
 RUN npm ci
 COPY apps/api/tsconfig.json ./
-COPY apps/api/prisma ./prisma
 COPY apps/api/src ./src
 COPY apps/api/scripts ./scripts
 RUN npx prisma generate && npm run build
@@ -42,7 +44,7 @@ ENV NODE_ENV=production
 # refreshed while the container runs (see scripts/docker-entrypoint.sh), not
 # only at build time.
 RUN apt-get update \
- && apt-get install -y --no-install-recommends clamav \
+ && apt-get install -y --no-install-recommends ca-certificates clamav \
  && rm -rf /var/lib/apt/lists/* \
  && (freshclam --quiet || echo "freshclam failed; the entrypoint retries at start")
 
