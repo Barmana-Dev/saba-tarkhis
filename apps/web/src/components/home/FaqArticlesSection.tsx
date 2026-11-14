@@ -35,7 +35,7 @@ export default function FaqArticlesSection() {
                     <HelpCircle className="lead-icon size-4 shrink-0 text-accent-600" aria-hidden />
                     {faq.question}
                   </span>
-                  <span className="text-slate-400 transition-transform group-open:rotate-45" aria-hidden>
+                  <span className="text-slate-600 transition-transform group-open:rotate-45" aria-hidden>
                     +
                   </span>
                 </summary>
@@ -64,7 +64,7 @@ export default function FaqArticlesSection() {
                 <p className="text-[11px] text-accent-700">{article.category?.name ?? "مقاله"}</p>
                 <h3 className="mt-1 text-sm font-bold text-brand-900">{article.title}</h3>
                 <p className="mt-1.5 line-clamp-2 text-xs leading-6 text-slate-600">{article.excerpt}</p>
-                <p className="mt-2 text-[11px] text-slate-400">{formatDate(article.publishedAt)}</p>
+                <p className="mt-2 text-[11px] text-slate-600">{formatDate(article.publishedAt)}</p>
               </Link>
             ))}
             {articles.isPending ? <Skeleton className="h-24 rounded-2xl" /> : null}

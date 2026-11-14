@@ -99,7 +99,7 @@ export function AdminDashboard() {
                 <p className="num mt-2 text-2xl font-bold text-brand-900">
                   {toPersianDigits(stats.data.totals.requests)}
                 </p>
-                <p className="mt-1 text-[11px] text-slate-400">
+                <p className="mt-1 text-[11px] text-slate-600">
                   در بازه انتخابی: {toPersianDigits(stats.data.totals.requestsInRange)}
                 </p>
               </div>
@@ -127,7 +127,7 @@ export function AdminDashboard() {
                 <p className="num mt-2 text-2xl font-bold text-brand-900">
                   {toPersianDigits(stats.data.totals.contactMessages)}
                 </p>
-                <p className="mt-1 text-[11px] text-slate-400">
+                <p className="mt-1 text-[11px] text-slate-600">
                   جدید: {toPersianDigits(stats.data.totals.contactByStatus.NEW ?? 0)}
                 </p>
               </div>
@@ -142,7 +142,7 @@ export function AdminDashboard() {
 
       <div className="mt-5 grid items-end gap-3 rounded-2xl border border-slate-200 bg-white p-4 md:grid-cols-2 lg:grid-cols-4">
         <div className="relative lg:col-span-2">
-          <Search className="pointer-events-none absolute end-3 top-3.5 size-4 text-slate-400" aria-hidden />
+          <Search className="pointer-events-none absolute end-3 top-3.5 size-4 text-slate-600" aria-hidden />
           <Input
             value={term}
             onChange={(event) => setTerm(event.target.value)}
@@ -236,17 +236,17 @@ export function AdminDashboard() {
                   <td className="num px-4 py-3 text-slate-700">{item.trackingCode}</td>
                   <td className="px-4 py-3">
                     <span className="block text-slate-800">{item.user?.fullName}</span>
-                    <span className="num mt-0.5 block text-[11px] text-slate-400">{item.user?.mobile}</span>
+                    <span className="num mt-0.5 block text-[11px] text-slate-600">{item.user?.mobile}</span>
                   </td>
                   <td className="max-w-[220px] px-4 py-3">
                     <span className="block truncate text-slate-800">{item.goodsDescription}</span>
-                    <span className="mt-0.5 block text-[11px] text-slate-400">
+                    <span className="mt-0.5 block text-[11px] text-slate-600">
                       {procedureLabels[item.procedureType] ?? item.procedureType}
                     </span>
                   </td>
                   <td className="px-4 py-3"><RequestStatusBadge status={item.status} /></td>
                   <td className="px-4 py-3 text-slate-600">
-                    {item.assignedExpert?.fullName ?? <span className="text-slate-400">تخصیص‌نیافته</span>}
+                    {item.assignedExpert?.fullName ?? <span className="text-slate-600">تخصیص‌نیافته</span>}
                   </td>
                   <td className="px-4 py-3 text-[11px] text-slate-500">{formatDate(item.createdAt)}</td>
                   <td className="px-4 py-3 text-end">

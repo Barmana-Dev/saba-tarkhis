@@ -115,7 +115,7 @@ export function Login() {
             <li>• دریافت پیام کارشناس و درخواست مدارک تکمیلی</li>
             <li>• بارگذاری و دریافت امن مدارک پرونده</li>
           </ul>
-          <p className="mt-8 rounded-xl border border-white/10 bg-white/5 p-3 text-[11px] leading-5 text-slate-400">
+          <p className="mt-8 rounded-xl border border-white/10 bg-white/5 p-3 text-[11px] leading-5 text-slate-300">
             وضعیت‌های این سامانه، وضعیت داخلی شرکت صبا ترخیص هستند و به معنی وضعیت رسمی گمرکی
             نیستند.
           </p>

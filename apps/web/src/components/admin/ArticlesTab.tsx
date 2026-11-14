@@ -123,9 +123,9 @@ export function ArticlesTab() {
                     {article.status === "PUBLISHED" ? "منتشرشده" : "پیش‌نویس"}
                   </span>
                 </div>
-                <p className="num mt-0.5 text-[11px] text-slate-400">{article.slug}</p>
+                <p className="num mt-0.5 text-[11px] text-slate-600">{article.slug}</p>
                 <p className="mt-1.5 line-clamp-2 text-xs leading-6 text-slate-600">{article.excerpt}</p>
-                <p className="mt-2 text-[11px] text-slate-400">
+                <p className="mt-2 text-[11px] text-slate-600">
                   {article.category?.name ?? "بدون دسته"} · بازبینی: {formatDate(article.reviewedAt)}
                 </p>
               </div>
@@ -143,7 +143,7 @@ export function ArticlesTab() {
                   onClick={() => {
                     if (window.confirm(`مقاله «${article.title}» حذف شود؟`)) remove.mutate(article.id);
                   }}
-                  className="rounded-md p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+                  className="rounded-md p-1.5 text-slate-600 hover:bg-rose-50 hover:text-rose-600"
                   aria-label={`حذف ${article.title}`}
                 >
                   <Trash2 className="size-4" aria-hidden />

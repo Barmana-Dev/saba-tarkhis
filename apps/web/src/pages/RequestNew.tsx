@@ -175,7 +175,7 @@ export function RequestNew() {
                   <span className={`block text-xs font-semibold ${state === "todo" ? "text-slate-500" : "text-brand-900"}`}>
                     {item.title}
                   </span>
-                  <span className="mt-0.5 hidden text-[11px] leading-5 text-slate-400 md:block">
+                  <span className="mt-0.5 hidden text-[11px] leading-5 text-slate-600 md:block">
                     {item.description}
                   </span>
                 </span>
@@ -355,13 +355,13 @@ export function RequestNew() {
                           className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs"
                         >
                           <span className="flex min-w-0 items-center gap-2">
-                            <FileText className="size-4 shrink-0 text-slate-400" aria-hidden />
+                            <FileText className="size-4 shrink-0 text-slate-600" aria-hidden />
                             <span className="truncate">{file.name}</span>
                           </span>
                           <button
                             type="button"
                             onClick={() => setFiles((current) => current.filter((item) => item !== file))}
-                            className="text-slate-400 hover:text-rose-600"
+                            className="text-slate-600 hover:text-rose-600"
                             aria-label={`حذف ${file.name}`}
                           >
                             <Trash2 className="size-4" aria-hidden />
