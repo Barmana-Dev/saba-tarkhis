@@ -223,4 +223,69 @@ describe("admin and expert workflows", () => {
     const auditCount = await prisma.auditLog.count({ where: { action: "USER_UPDATED" } });
     expect(auditCount).toBe(1);
   });
+
+  it("rejects the second of two concurrent status changes", async () => {
+    const created = await createRequest(customerMobile);
+    const admin = await loginAgent(adminMobile);
+
+    const changeStatus = () =>
+      admin.agent
+        .patch(`/api/v1/admin/requests/${created.id}/status`)
+        .set("x-csrf-token", admin.csrf)
+        .send({ status: "UNDER_REVIEW" });
+
+    const [first, second] = await Promise.all([changeStatus(), changeStatus()]);
+    expect([first.status, second.status].sort()).toEqual([200, 409]);
+
+    const history = await prisma.requestStatusHistory.count({
+      where: { requestId: created.id, toStatus: "UNDER_REVIEW" },
+    });
+    expect(history).toBe(1);
+  });
+
+  it("never lets two admins deactivate each other at the same time", async () => {
+    await createUser("ADMIN", "09120000077", "مدیر دوم");
+    const adminA = await loginAgent(adminMobile);
+    const adminB = await loginAgent("09120000077");
+
+    const deactivate = (
+      actor: Awaited<ReturnType<typeof loginAgent>>,
+      targetId: string,
+    ) =>
+      actor.agent
+        .patch(`/api/v1/admin/users/${targetId}`)
+        .set("x-csrf-token", actor.csrf)
+        .send({ isActive: false });
+
+    const [resultA, resultB] = await Promise.all([
+      deactivate(adminA, adminB.user.id),
+      deactivate(adminB, adminA.user.id),
+    ]);
+
+    const activeAdmins = await prisma.user.count({ where: { role: "ADMIN", isActive: true } });
+    expect(activeAdmins).toBeGreaterThanOrEqual(1);
+    expect([resultA.status, resultB.status].filter((status) => status === 200)).toHaveLength(1);
+  });
+
+  it("filters lists by whole Iran days and rejects impossible dates", async () => {
+    const created = await createRequest(customerMobile);
+    // 2026-03-20T21:30Z is already 2026-03-21 01:00 in Tehran.
+    await prisma.clearanceRequest.update({
+      where: { id: created.id },
+      data: { createdAt: new Date("2026-03-20T21:30:00.000Z") },
+    });
+    const admin = await loginAgent(adminMobile);
+
+    const iranDay = await admin.agent.get("/api/v1/admin/requests?from=2026-03-21&to=2026-03-21");
+    expect(iranDay.body.data.items).toHaveLength(1);
+
+    const utcDay = await admin.agent.get("/api/v1/admin/requests?from=2026-03-20&to=2026-03-20");
+    expect(utcDay.body.data.items).toHaveLength(0);
+
+    const impossible = await admin.agent.get("/api/v1/admin/requests?from=2026-02-31");
+    expect(impossible.status).toBe(400);
+
+    const reversed = await admin.agent.get("/api/v1/admin/requests?from=2026-03-22&to=2026-03-21");
+    expect(reversed.status).toBe(400);
+  });
 });

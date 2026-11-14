@@ -12,9 +12,27 @@ import { buildSamplePdf } from "./sample-pdf";
 
 const prisma = new PrismaClient();
 
-const demoPassword = process.env.SEED_DEMO_PASSWORD ?? "Demo@12345";
+/**
+ * Demo seeding creates accounts with a shared password, so it must never run
+ * against a production database and must never fall back to a well-known
+ * default password.
+ */
+function resolveDemoPassword(): string {
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "Seed is disabled in production. Create real accounts with `npm run user:create -- --mobile ... --role ADMIN`.",
+    );
+  }
+  const password = process.env.SEED_DEMO_PASSWORD;
+  if (!password || password.length < 10) {
+    throw new Error(
+      "SEED_DEMO_PASSWORD is required (at least 10 characters). Refusing to seed demo accounts with a default password.",
+    );
+  }
+  return password;
+}
 
-async function seedUsers() {
+async function seedUsers(demoPassword: string) {
   const passwordHash = await hashPassword(demoPassword);
 
   const admin = await prisma.user.upsert({
@@ -476,7 +494,8 @@ async function seedRequests(ids: {
 }
 
 async function main() {
-  const ids = await seedUsers();
+  const demoPassword = resolveDemoPassword();
+  const ids = await seedUsers(demoPassword);
   await seedContent();
   await seedRequests({
     admin: ids.admin.id,

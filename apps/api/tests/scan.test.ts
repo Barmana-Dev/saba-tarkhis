@@ -1,12 +1,17 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it } from "vitest";
-import { existsSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { rmSync, writeFileSync } from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { buildSamplePdf } from "../prisma/sample-pdf";
 import { prisma } from "../src/lib/prisma";
 import { scanFile, ScannerUnavailableError } from "../src/lib/scan";
+import {
+  FAILURE_MARKER,
+  INFECTED_MARKER as MARKER,
+  STUB_ENGINE_NAME,
+  STUB_PATH as STUB,
+} from "./fake-clamav";
 import { createUser, loginAgent, resetDb, validPayload } from "./helpers";
-
-const STUB = "/tmp/saba-fake-clamscan.sh";
-const MARKER = "/tmp/saba-fake-infected";
 const pdf = buildSamplePdf("scan sample");
 
 async function submit(
@@ -24,11 +29,12 @@ describe("document malware scanning", () => {
   beforeEach(async () => {
     await resetDb();
     rmSync(MARKER, { force: true });
+    rmSync(FAILURE_MARKER, { force: true });
   });
 
   afterEach(() => {
     rmSync(MARKER, { force: true });
-    if (existsSync(`${STUB}.off`)) renameSync(`${STUB}.off`, STUB);
+    rmSync(FAILURE_MARKER, { force: true });
   });
 
   afterAll(async () => {
@@ -45,7 +51,7 @@ describe("document malware scanning", () => {
 
     const stored = await prisma.requestDocument.findUniqueOrThrow({ where: { id: documentId } });
     expect(stored.scanStatus).toBe("CLEAN");
-    expect(stored.scanEngine).toBe("saba-fake-clamscan.sh");
+    expect(stored.scanEngine).toBe(STUB_ENGINE_NAME);
     expect(stored.scannedAt).not.toBeNull();
 
     const download = await customer.agent.get(
@@ -69,7 +75,8 @@ describe("document malware scanning", () => {
   it("fails closed when the scanner is unavailable", async () => {
     await createUser("CUSTOMER", "09127770003", "مشتری اسکنر قطع");
     const customer = await loginAgent("09127770003");
-    renameSync(STUB, `${STUB}.off`);
+    // Scanner reachable but failing (exit code 3) must fail closed too.
+    writeFileSync(FAILURE_MARKER, "down");
 
     const response = await submit(customer.agent, customer.csrf);
     expect(response.status).toBe(503);
@@ -97,7 +104,7 @@ describe("document malware scanning", () => {
   });
 
   it("maps scanner exit codes and unreachable binaries", async () => {
-    const sample = "/tmp/scan-contract.pdf";
+    const sample = path.join(os.tmpdir(), "scan-contract.pdf");
     writeFileSync(sample, pdf);
 
     await expect(scanFile(sample, { binary: STUB })).resolves.toMatchObject({ status: "CLEAN" });

@@ -23,6 +23,18 @@ type ScanOptions = {
 };
 
 /**
+ * `.mjs`/`.cjs`/`.js` scanners are executed with the current Node binary, which
+ * keeps the test stub cross-platform (Windows cannot exec a shell script).
+ */
+function commandFor(binary: string, filePath: string): { command: string; args: string[] } {
+  const args = ["--no-summary", "--infected", "--", filePath];
+  if (/\.(mjs|cjs|js)$/i.test(binary)) {
+    return { command: process.execPath, args: [binary, ...args] };
+  }
+  return { command: binary, args };
+}
+
+/**
  * Runs ClamAV (`clamscan`) against a quarantined file.
  * Exit codes: 0 = clean, 1 = infected, anything else = scanner failure.
  */
@@ -30,11 +42,12 @@ export function scanFile(filePath: string, options: ScanOptions = {}): Promise<S
   const binary = options.binary ?? env.clamscanPath;
   const timeout = options.timeoutMs ?? env.clamscanTimeoutMs;
   const engine = path.basename(binary);
+  const { command, args } = commandFor(binary, filePath);
 
   return new Promise((resolve, reject) => {
     execFile(
-      binary,
-      ["--no-summary", "--infected", "--", filePath],
+      command,
+      args,
       { timeout, maxBuffer: 1024 * 1024 },
       (error, stdout) => {
         if (!error) {
