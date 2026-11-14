@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, useLocation } from "react-router-dom";
 import { AuthProvider } from "./lib/auth";
+import { BackToTop } from "./components/BackToTop";
 import { AppRoutes } from "./routes/AppRoutes";
 
 const queryClient = new QueryClient({
@@ -29,6 +30,7 @@ export default function App() {
         <AuthProvider>
           <ScrollToTop />
           <AppRoutes />
+          <BackToTop />
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>

@@ -144,19 +144,23 @@ select:disabled,
 
 
 /*
- * Balanced line breaks: without this a short tail like «خواهد شد» can land alone
- * on the last line. Browsers balance short blocks and fall back to normal
- * wrapping once a block gets long, so body copy still wraps naturally.
+ * Headings and page intro paragraphs get balanced lines (no short tail like
+ * «خواهد شد» alone on the last line). Body copy keeps filling the container
+ * width line by line: `pretty` only avoids a lonely last word instead of
+ * shortening every line like `balance` did.
  */
 h1,
 h2,
 h3,
-h4,
+h4 {
+  text-wrap: balance;
+}
+
 p,
 li,
 dd,
 figcaption {
-  text-wrap: balance;
+  text-wrap: pretty;
 }
 
 .prose-fa p {

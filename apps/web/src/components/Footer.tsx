@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { api } from "../lib/api";
+import { scrollToTop } from "../lib/scroll";
 
 type PublicSettings = Record<string, string>;
 
@@ -21,7 +22,16 @@ export function Footer() {
     <footer className="mt-20 border-t border-slate-800 bg-brand-950 text-slate-300">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
         <div className="space-y-4">
-          <h2 className="text-lg font-bold leading-5 text-white">صبا ترخیص</h2>
+          <button
+            type="button"
+            onClick={scrollToTop}
+            className="block text-start"
+            aria-label="بازگشت به بالای صفحه — صبا ترخیص"
+          >
+            <span className="block text-lg font-bold leading-5 text-white transition-colors hover:text-accent-400">
+              صبا ترخیص
+            </span>
+          </button>
           <p className="text-xs leading-7 text-slate-400">
             همراه شما در بررسی اسناد، مشاوره امور گمرکی و پیشبرد پرونده‌های ترخیص کالا. این سامانه،
             وضعیت رسیدگی داخلی شرکت را نمایش می‌دهد و سامانه رسمی گمرک نیست.

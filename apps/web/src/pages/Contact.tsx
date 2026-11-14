@@ -60,7 +60,7 @@ export function Contact() {
       <header className="max-w-2xl">
         <p className="text-xs font-semibold text-accent-700">ارتباط با ما</p>
         <h1 className="mt-2 text-3xl font-bold text-brand-900">تماس با صبا ترخیص</h1>
-        <p className="mt-3 text-sm leading-7 text-slate-600">
+        <p className="mt-3 text-balance text-sm leading-7 text-slate-600">
           پرسش، پیشنهاد یا درخواست مشاوره خود را از این فرم ثبت کنید. پیام شما در سامانه ذخیره
           می‌شود و توسط تیم بررسی خواهد شد.
         </p>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { LayoutDashboard, LogOut, Menu, User, X } from "lucide-react";
 import { useAuth } from "../lib/auth";
+import { scrollToTop } from "../lib/scroll";
 import { cn } from "./ui";
 
 const navItems = [
@@ -46,6 +47,18 @@ export function Header() {
 
   const panelLink = user?.role === "CUSTOMER" ? "/dashboard" : user ? "/admin" : "/login";
 
+  // Clicking the link of the page you are already on re-navigates to the same
+  // route, which does nothing; glide back to the top of that page instead.
+  function handleNavClick(to: string) {
+    return (event: React.MouseEvent<HTMLAnchorElement>) => {
+      if (location.pathname === to) {
+        event.preventDefault();
+        setOpen(false);
+        scrollToTop();
+      }
+    };
+  }
+
   return (
     <header
       className={cn(
@@ -54,7 +67,18 @@ export function Header() {
       )}
     >
       <div className="mx-auto flex h-18 max-w-7xl items-center justify-between gap-4 px-4 py-3 lg:px-8">
-        <Link to="/" className="flex shrink-0 items-center gap-3" aria-label="صبا ترخیص — صفحه اصلی">
+        <Link
+          to="/"
+          onClick={(event) => {
+            // Already on the homepage: re-navigating does nothing, so glide to the top.
+            if (location.pathname === "/") {
+              event.preventDefault();
+              scrollToTop();
+            }
+          }}
+          className="flex shrink-0 items-center gap-3"
+          aria-label="صبا ترخیص — صفحه اصلی"
+        >
           <img
             src="/brand/logo.svg"
             alt=""
@@ -74,6 +98,7 @@ export function Header() {
             <NavLink
               key={item.to}
               to={item.to}
+              onClick={handleNavClick(item.to)}
               className={({ isActive }) =>
                 cn(
                   "whitespace-nowrap rounded-lg px-3 py-2 text-[13px] font-medium transition-all duration-200",
@@ -141,6 +166,7 @@ export function Header() {
               <NavLink
                 key={item.to}
                 to={item.to}
+                onClick={handleNavClick(item.to)}
                 className={({ isActive }) =>
                   cn(
                     "rounded-lg px-3 py-2.5 text-sm font-medium",
