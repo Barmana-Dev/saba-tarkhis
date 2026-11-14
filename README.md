@@ -34,6 +34,8 @@
 │   ├── api-spec.md             # قرارداد API
 │   ├── decisions.md            # تصمیم‌ها، محدودیت‌ها و موارد نیازمند تأیید
 │   ├── deployment.md           # راهنمای استقرار Production، nginx، بکاپ
+│   ├── manual-qa.md            # چک‌لیست تکرارپذیر بررسی مرورگر (دسترس‌پذیری/ریسپانسیو)
+│   ├── go-live-checklist.md    # کارهای حقوقی و عملیاتی پیش از تحویل به مشتری واقعی
 │   └── traceability.md         # ماتریس نیازمندی‌ها، تست‌ها و تأیید انتشار
 ├── docker-compose.yml          # PostgreSQL محلی (توسعه)
 ├── docker-compose.prod.yml     # استقرار: Postgres + ایمیج API/SPA
@@ -100,8 +102,9 @@ Vite مسیر `/api` را به `http://127.0.0.1:4000` پروکسی می‌کن�
 | مشتری | `09120000003` | `Demo@12345` |
 | مشتری دوم | `09120000004` | `Demo@12345` |
 
-رمز با متغیر `SEED_DEMO_PASSWORD` هنگام seed قابل تغییر است. برای production، حساب مدیر را با
-رمز قوی و غیرعمومی بسازید.
+این حساب‌ها فقط با `SEED_DEMO_PASSWORD` ساخته می‌شوند؛ هیچ رمز پیش‌فرضی در کد نیست و `db:seed`
+بدون آن (یا با `NODE_ENV=production`) اجرا نمی‌شود. برای production، حساب مدیر را با رمز قوی و
+غیرعمومی از طریق `npm run user:create` بسازید.
 
 ## اسکریپت‌ها
 
@@ -119,6 +122,7 @@ Vite مسیر `/api` را به `http://127.0.0.1:4000` پروکسی می‌کن�
 | `npm run db:reset` | بازنشانی کامل دیتابیس + seed |
 | `npm run db:studio` | Prisma Studio |
 | `npm run user:create` | ساخت حساب واقعی (مثلاً اولین مدیر) بدون seed دمو |
+| `npm run scan:verify` | بررسی واقعی ClamAV با فایل تست EICAR (پس از `npm run build`) |
 
 ### وب (`apps/web`)
 
@@ -144,6 +148,10 @@ Vite مسیر `/api` را به `http://127.0.0.1:4000` پروکسی می‌کن�
 cp .env.production.example .env.production   # مقادیر CHANGE_ME را پر کنید
 docker compose -f docker-compose.prod.yml up -d --build
 ```
+
+`UPLOAD_DIR` و `QUARANTINE_DIR` داخل تصویر هر دو زیر یک volume (`saba_tarkhis_files`) هستند؛
+انتقال فایل اسکن‌شده از قرنطینه به انبار روی همان فایل‌سیستم انجام می‌شود (و اگر ایمیج را خودتان
+با دو volume جدا اجرا کنید، کد در صورت `EXDEV` با کپی امن فایل را منتقل می‌کند).
 
 حساب مدیر در محیط واقعی (بدون داده دمو):
 
@@ -188,8 +196,11 @@ TEST_DATABASE_URL="postgresql://postgres:postgres@localhost:5432/saba_tarkhis_te
 `globalSetup` تست‌ها schema را با `prisma db push` روی دیتابیس تست اعمال می‌کند. تست‌ها به‌صورت
 متوالی اجرا می‌شوند و داده‌های هر فایل را پاک می‌کنند.
 
-> **نکته پلتفرم:** تست‌های اسکن از یک stub شل در `/tmp` استفاده می‌کنند (`#!/bin/sh`)، پس روی
-> Windows بومی اجرا نمی‌شوند؛ آن‌ها را در Linux/macOS، WSL یا کانتینر `node:24` اجرا کنید.
+> **ایمنی:** نام دیتابیس باید به `_test` ختم شود، وگرنه `globalSetup` اجرای تست‌ها را متوقف می‌کند؛
+> این‌طوری یک `DATABASE_URL` اشتباه نمی‌تواند داده واقعی را پاک کند.
+
+> **پلتفرم:** stub اسکنر یک اسکریپت Node است و از طریق خودِ `node` اجرا می‌شود، بنابراین تست‌ها
+> روی Windows، Linux و macOS (و در کانتینر `node:24`) یکسان کار می‌کنند.
 
 پوشش تست‌ها: ثبت‌نام/ورود/خروج، CSRF، RBAC، ثبت درخواست و شناسه پیگیری، اعتبارسنجی و رد فایل
 نامعتبر، جداسازی داده مشتریان، عدم نمایش یادداشت داخلی، تاریخچه وضعیت، تخصیص کارشناس، پیشنهاد
@@ -218,15 +229,18 @@ TEST_DATABASE_URL="postgresql://postgres:postgres@localhost:5432/saba_tarkhis_te
 
 جزئیات بیشتر: [docs/api-spec.md](./docs/api-spec.md)، [docs/decisions.md](./docs/decisions.md)،
 [docs/deployment.md](./docs/deployment.md) (استقرار Production، nginx، بکاپ)
-و [docs/traceability.md](./docs/traceability.md) (ماتریس نیازمندی/تست و وضعیت تأیید انتشار).
+[docs/traceability.md](./docs/traceability.md) (ماتریس نیازمندی/تست)،
+[docs/manual-qa.md](./docs/manual-qa.md) (چک‌لیست بررسی مرورگر) و
+[docs/go-live-checklist.md](./docs/go-live-checklist.md) (کارهای حقوقی/عملیاتی پیش از تحویل).
 
 ## محدودیت‌ها و کارهای باقی‌مانده
 
 - SPA است؛ prerender/SSR واقعی برای SEO پیاده‌سازی نشده (meta سمت کلاینت + sitemap/robots موجود است).
 - بازیابی رمز، OTP/تأیید پیامکی و اطلاع‌رسانی ایمیل/پیامک نیازمند زیرساخت بیرونی است.
 - ذخیره‌سازی مدارک روی دیسک محلی است؛ برای production باید Object Storage خصوصی استفاده شود.
-- اسکن بدافزار با ClamAV پیاده‌سازی شده (قرنطینه، رد فایل آلوده و Fail Closed)، اما موتور
-  واقعی ClamAV در محیط توسعه نصب نبود؛ صحت اتصال با اسکنر قراردادی تست شده، نه تشخیص واقعی.
+- اسکن بدافزار با ClamAV پیاده‌سازی شده (قرنطینه، رد فایل آلوده و Fail Closed). موتور واقعی
+  ClamAV در محیط توسعه نصب نیست؛ پیش از انتشار، `npm run scan:verify` را در staging/کانتینر
+  اجرا کنید تا تشخیص واقعی فایل EICAR تأیید شود.
 - بازیابی رمز عبور و تأیید پیامکی پیاده‌سازی نشده است (نیازمند سرویس پیامک/ایمیل).
 - خروجی PDF، محاسبه‌گر هزینه، نمودار مدیریتی و جست‌وجوی پیشرفته در محدوده MVP نبوده‌اند.
 - متن نهایی حریم خصوصی/شرایط استفاده و اطلاعات تماس، مجوزها و آمار باید توسط کارفرما تأیید شود.
