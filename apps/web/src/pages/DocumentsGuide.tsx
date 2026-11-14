@@ -53,7 +53,7 @@ export function DocumentsGuide() {
 
       <div className="mt-7 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 md:flex-row md:items-center">
         <div className="relative grow">
-          <Search className="pointer-events-none absolute end-3 top-3.5 size-4 text-slate-400" aria-hidden />
+          <Search className="pointer-events-none absolute end-3 top-3.5 size-4 text-slate-600" aria-hidden />
           <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
@@ -91,7 +91,7 @@ export function DocumentsGuide() {
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h2 className="text-base font-bold text-brand-900">{document.title}</h2>
-                <p className="num mt-0.5 text-[11px] text-slate-400">{document.latin}</p>
+                <p className="num mt-0.5 text-[11px] text-slate-600">{document.latin}</p>
               </div>
               <span className="rounded-full bg-brand-50 px-2.5 py-1 text-[11px] text-brand-700">
                 {document.category}

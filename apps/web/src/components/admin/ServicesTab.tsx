@@ -91,7 +91,7 @@ export function ServicesTab() {
                     {service.isPublished ? "منتشرشده" : "منتشرنشده"}
                   </span>
                 </div>
-                <p className="num mt-0.5 text-[11px] text-slate-400">{service.slug}</p>
+                <p className="num mt-0.5 text-[11px] text-slate-600">{service.slug}</p>
                 <p className="mt-1.5 line-clamp-2 text-xs leading-6 text-slate-600">{service.excerpt}</p>
               </div>
               <div className="flex shrink-0 gap-1">
@@ -108,7 +108,7 @@ export function ServicesTab() {
                   onClick={() => {
                     if (window.confirm(`خدمت «${service.title}» حذف شود؟`)) remove.mutate(service.id);
                   }}
-                  className="rounded-md p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+                  className="rounded-md p-1.5 text-slate-600 hover:bg-rose-50 hover:text-rose-600"
                   aria-label={`حذف ${service.title}`}
                 >
                   <Trash2 className="size-4" aria-hidden />

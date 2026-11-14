@@ -54,6 +54,13 @@ export async function loadSession(req: Request, res: Response, next: NextFunctio
     });
 
     if (!session || session.expiresAt.getTime() <= Date.now() || !session.user.isActive) {
+      // A dead session must not keep the browser holding a stale cookie: with it
+      // in place the CSRF check rejects even anonymous requests (contact form,
+      // logout). Drop the cookie and the orphaned row, then continue signed out.
+      clearAuthCookies(res);
+      if (session) {
+        await prisma.session.delete({ where: { id: session.id } }).catch(() => undefined);
+      }
       return next();
     }
 
@@ -113,7 +120,7 @@ export function enforceTrustedOrigin(req: Request, _res: Response, next: NextFun
  * Double-submit CSRF check bound to the server-side session:
  * the header token must hash to the value stored with the session.
  */
-export function csrfProtection(req: Request, _res: Response, next: NextFunction) {
+export function csrfProtection(req: Request, res: Response, next: NextFunction) {
   if (["GET", "HEAD", "OPTIONS"].includes(req.method)) {
     return next();
   }
@@ -122,6 +129,7 @@ export function csrfProtection(req: Request, _res: Response, next: NextFunction)
     return next();
   }
   if (!req.authSession) {
+    clearAuthCookies(res);
     return next(unauthorized("نشست شما منقضی شده است. دوباره وارد شوید."));
   }
 

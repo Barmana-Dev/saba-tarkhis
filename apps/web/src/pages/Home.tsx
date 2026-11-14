@@ -116,12 +116,12 @@ export function Home() {
                             ? "border-emerald-200 bg-emerald-50 text-emerald-700"
                             : step.active
                               ? "border-amber-300 bg-amber-50 text-amber-700"
-                              : "border-slate-200 bg-slate-50 text-slate-400"
+                              : "border-slate-200 bg-slate-50 text-slate-600"
                         }`}
                       >
                         {step.done ? "✓" : "•"}
                       </span>
-                      <span className={step.done || step.active ? "text-slate-700" : "text-slate-400"}>
+                      <span className={step.done || step.active ? "text-slate-700" : "text-slate-600"}>
                         {step.label}
                       </span>
                     </li>

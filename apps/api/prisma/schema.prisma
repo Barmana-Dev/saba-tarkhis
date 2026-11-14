@@ -3,6 +3,10 @@
 
 generator client {
   provider = "prisma-client-js"
+  // `native` covers the developer machine; the Debian 12 target is required for
+  // the Docker image, where the slim base has no `openssl` CLI and Prisma would
+  // otherwise pick the OpenSSL 1.1 engine that cannot load at runtime.
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {

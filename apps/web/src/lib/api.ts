@@ -3,6 +3,17 @@ const API_BASE =
 
 export type FieldError = { field: string; message: string };
 
+/**
+ * API responses return server-relative paths (e.g. a document download link).
+ * When the SPA talks to a separate API origin those paths must be resolved
+ * against that origin instead of the frontend host.
+ */
+export function apiUrl(path: string): string {
+  if (!path.startsWith("/api/")) return path;
+  const apiRoot = API_BASE.replace(/\/api\/v1$/, "");
+  return `${apiRoot}${path}`;
+}
+
 export class ApiError extends Error {
   readonly status: number;
   readonly code: string;

@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { mkdir, rename, unlink, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, rename, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { env } from "../config/env";
 import { AppError, badRequest } from "./errors";
@@ -103,7 +103,7 @@ export async function saveRequestFile(
     }
 
     await mkdir(directory, { recursive: true });
-    await rename(tempPath, absolutePath);
+    await moveIntoStorage(tempPath, absolutePath);
   } catch (error) {
     await unlink(tempPath).catch(() => undefined);
     if (error instanceof ScannerUnavailableError) {
@@ -125,6 +125,22 @@ export async function saveRequestFile(
     scanEngine,
     scannedAt: new Date(),
   };
+}
+
+/**
+ * Moves a scanned file out of quarantine. The two directories can live on
+ * different filesystems (e.g. two Docker volumes), where `rename` fails with
+ * EXDEV; in that case copy the bytes and drop the quarantine file.
+ */
+async function moveIntoStorage(from: string, to: string): Promise<void> {
+  try {
+    await rename(from, to);
+    return;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "EXDEV") throw error;
+  }
+  await copyFile(from, to);
+  await unlink(from).catch(() => undefined);
 }
 
 /** Prevents path traversal outside the private upload root. */

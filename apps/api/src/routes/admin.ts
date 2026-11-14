@@ -5,6 +5,7 @@ import { badRequest, conflict, notFound } from "../lib/errors";
 import { ok, parsePage } from "../lib/http";
 import { prisma } from "../lib/prisma";
 import { audit } from "../lib/audit";
+import { buildIranDateRange, iranDayKey, parseIranDayEnd, parseIranDayStart } from "../lib/dates";
 import { assertTransition, statusLabels } from "../lib/status";
 import { requireAuth, requireRole } from "../middleware/auth";
 import { asyncHandler } from "../middleware/error";
@@ -49,14 +50,10 @@ adminRouter.get(
         ? { assignedExpertId: query.expertId }
         : {}),
       ...(query.status ? { status: query.status } : {}),
-      ...(query.from || query.to
-        ? {
-            createdAt: {
-              ...(query.from ? { gte: new Date(query.from) } : {}),
-              ...(query.to ? { lte: new Date(`${query.to}T23:59:59.999Z`) } : {}),
-            },
-          }
-        : {}),
+      ...(() => {
+        const createdAt = buildIranDateRange(query.from, query.to);
+        return createdAt ? { createdAt } : {};
+      })(),
       ...(query.q
         ? {
             OR: [
@@ -141,9 +138,19 @@ adminRouter.patch(
     assertTransition(row.status, status);
 
     const updated = await prisma.$transaction(async (tx) => {
-      const changed = await tx.clearanceRequest.update({
-        where: { id: row.id },
+      // Optimistic concurrency: two agents editing the same case must not both
+      // write a transition from the same starting status.
+      const claimed = await tx.clearanceRequest.updateMany({
+        where: { id: row.id, status: row.status },
         data: { status },
+      });
+      if (claimed.count === 0) {
+        throw conflict(
+          "وضعیت این پرونده هم‌زمان توسط کاربر دیگری تغییر کرده است. صفحه را بازخوانی کنید.",
+        );
+      }
+      const changed = await tx.clearanceRequest.findUniqueOrThrow({
+        where: { id: row.id },
         select: { id: true, status: true, updatedAt: true },
       });
       await tx.requestStatusHistory.create({
@@ -240,9 +247,17 @@ adminRouter.patch(
     const nextStatus = markAsQuoted ? "QUOTED" : row.status;
 
     const updated = await prisma.$transaction(async (tx) => {
-      const changed = await tx.clearanceRequest.update({
-        where: { id: row.id },
+      const claimed = await tx.clearanceRequest.updateMany({
+        where: { id: row.id, status: row.status },
         data: { quoteNote, ...(markAsQuoted ? { status: nextStatus } : {}) },
+      });
+      if (claimed.count === 0) {
+        throw conflict(
+          "وضعیت این پرونده هم‌زمان توسط کاربر دیگری تغییر کرده است. صفحه را بازخوانی کنید.",
+        );
+      }
+      const changed = await tx.clearanceRequest.findUniqueOrThrow({
+        where: { id: row.id },
         select: { id: true, quoteNote: true, status: true, updatedAt: true },
       });
       if (markAsQuoted && nextStatus !== row.status) {
@@ -302,8 +317,10 @@ adminRouter.get(
       })
       .parse(req.query);
 
-    const from = query.from ? new Date(query.from) : new Date(Date.now() - 29 * 24 * 60 * 60 * 1000);
-    const to = query.to ? new Date(`${query.to}T23:59:59.999Z`) : new Date();
+    const from = query.from
+      ? parseIranDayStart(query.from, "from")
+      : new Date(Date.now() - 29 * 24 * 60 * 60 * 1000);
+    const to = query.to ? parseIranDayEnd(query.to, "to") : new Date();
     const range = { gte: from, lte: to };
 
     const [total, byStatus, byProcedure, contactByStatus, newUsers, rangeRequests, recent] =
@@ -337,7 +354,7 @@ adminRouter.get(
 
     const dailyMap = new Map<string, number>();
     for (const item of rangeRequests) {
-      const key = item.createdAt.toISOString().slice(0, 10);
+      const key = iranDayKey(item.createdAt);
       dailyMap.set(key, (dailyMap.get(key) ?? 0) + 1);
     }
 
@@ -432,35 +449,58 @@ adminRouter.patch(
       throw badRequest("امکان تغییر نقش یا غیرفعال‌سازی حساب خودتان وجود ندارد.");
     }
 
-    const target = await prisma.user.findUnique({ where: { id: targetId } });
-    if (!target) throw notFound("کاربر موردنظر یافت نشد.");
+    const updated = await prisma.$transaction(async (tx) => {
+      // Lock the administrator rows so two admins cannot demote/deactivate each
+      // other concurrently and leave the system without an active admin.
+      await tx.$executeRaw`SELECT id FROM "User" WHERE role = 'ADMIN' FOR UPDATE`;
 
-    if (target.role === "ADMIN" && changes.role && changes.role !== "ADMIN") {
-      const adminCount = await prisma.user.count({ where: { role: "ADMIN", isActive: true } });
-      if (adminCount <= 1) throw conflict("حداقل یک مدیر فعال باید در سامانه باقی بماند.");
-    }
+      const target = await tx.user.findUnique({ where: { id: targetId } });
+      if (!target) throw notFound("کاربر موردنظر یافت نشد.");
 
-    const updated = await prisma.user.update({
-      where: { id: targetId },
-      data: {
-        ...(changes.role ? { role: changes.role } : {}),
-        ...(typeof changes.isActive === "boolean" ? { isActive: changes.isActive } : {}),
-      },
-      select: { id: true, fullName: true, role: true, isActive: true },
+      const nextRole = changes.role ?? target.role;
+      const nextIsActive =
+        typeof changes.isActive === "boolean" ? changes.isActive : target.isActive;
+      const losesAdminAccess =
+        target.role === "ADMIN" &&
+        target.isActive &&
+        !(nextRole === "ADMIN" && nextIsActive);
+
+      if (losesAdminAccess) {
+        const otherActiveAdmins = await tx.user.count({
+          where: { role: "ADMIN", isActive: true, id: { not: targetId } },
+        });
+        if (otherActiveAdmins === 0) {
+          throw conflict("حداقل یک مدیر فعال باید در سامانه باقی بماند.");
+        }
+      }
+
+      const row = await tx.user.update({
+        where: { id: targetId },
+        data: {
+          ...(changes.role ? { role: changes.role } : {}),
+          ...(typeof changes.isActive === "boolean" ? { isActive: changes.isActive } : {}),
+        },
+        select: { id: true, fullName: true, role: true, isActive: true },
+      });
+
+      await audit(
+        {
+          actorId: actor.id,
+          action: "USER_UPDATED",
+          entityType: "User",
+          entityId: targetId,
+          metadata: { ...changes },
+        },
+        tx,
+      );
+
+      // Deactivating a user must also end their active sessions.
+      if (changes.isActive === false) {
+        await tx.session.deleteMany({ where: { userId: targetId } });
+      }
+
+      return row;
     });
-
-    await audit({
-      actorId: actor.id,
-      action: "USER_UPDATED",
-      entityType: "User",
-      entityId: targetId,
-      metadata: { ...changes },
-    });
-
-    // Deactivating a user must also end their active sessions.
-    if (changes.isActive === false) {
-      await prisma.session.deleteMany({ where: { userId: targetId } });
-    }
 
     return ok(res, updated, "اطلاعات کاربر به‌روزرسانی شد.");
   }),

@@ -1,7 +1,10 @@
 import {
+  cloneElement,
   forwardRef,
+  isValidElement,
   type ButtonHTMLAttributes,
   type InputHTMLAttributes,
+  type ReactElement,
   type ReactNode,
   type SelectHTMLAttributes,
   type TextareaHTMLAttributes,
@@ -65,16 +68,34 @@ type FieldWrapperProps = {
 };
 
 export function Field({ label, htmlFor, required, error, hint, children }: FieldWrapperProps) {
+  const hintId = hint && !error ? `${htmlFor}-hint` : undefined;
+  const errorId = error ? `${htmlFor}-error` : undefined;
+  const describedBy = errorId ?? hintId;
+
+  // Tie the message to its control so screen readers announce which input the
+  // error belongs to (and the control is marked invalid).
+  const control =
+    describedBy && isValidElement(children)
+      ? cloneElement(children as ReactElement<{ "aria-describedby"?: string; invalid?: boolean }>, {
+          "aria-describedby": describedBy,
+          ...(error ? { invalid: true } : {}),
+        })
+      : children;
+
   return (
     <div className="space-y-1.5">
       <label htmlFor={htmlFor} className="block text-sm font-medium text-slate-700">
         {label}
         {required ? <span className="text-rose-600"> *</span> : null}
       </label>
-      {children}
-      {hint && !error ? <p className="text-xs text-slate-500">{hint}</p> : null}
+      {control}
+      {hint && !error ? (
+        <p id={hintId} className="text-xs text-slate-600">
+          {hint}
+        </p>
+      ) : null}
       {error ? (
-        <p className="flex items-center gap-1 text-xs text-rose-600" role="alert">
+        <p id={errorId} className="flex items-center gap-1 text-xs font-medium text-rose-700" role="alert">
           <AlertCircle className="size-3.5" aria-hidden />
           {error}
         </p>
@@ -84,7 +105,7 @@ export function Field({ label, htmlFor, required, error, hint, children }: Field
 }
 
 export const inputClass =
-  "w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 transition focus:border-brand-400 focus:ring-2 focus:ring-brand-100 disabled:bg-slate-50";
+  "w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 placeholder:text-slate-500 transition focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100 disabled:bg-slate-50";
 
 type InputProps = InputHTMLAttributes<HTMLInputElement> & { invalid?: boolean };
 
@@ -142,6 +163,7 @@ export function Checkbox({
   id,
   ...props
 }: InputHTMLAttributes<HTMLInputElement> & { label: ReactNode; error?: string }) {
+  const errorId = error && id ? `${id}-error` : undefined;
   return (
     <div className="space-y-1">
       <div className="flex items-start gap-2.5 text-sm leading-relaxed">
@@ -149,6 +171,8 @@ export function Checkbox({
           id={id}
           type="checkbox"
           className="lead-icon size-4 rounded border-slate-300 text-brand-700 accent-brand-700"
+          aria-invalid={error ? true : undefined}
+          aria-describedby={errorId}
           {...props}
         />
         <label htmlFor={id} className="text-sm leading-relaxed text-slate-600">
@@ -156,7 +180,7 @@ export function Checkbox({
         </label>
       </div>
       {error ? (
-        <p className="text-xs text-rose-600" role="alert">
+        <p id={errorId} className="text-xs font-medium text-rose-700" role="alert">
           {error}
         </p>
       ) : null}

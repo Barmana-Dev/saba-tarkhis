@@ -10,7 +10,7 @@ import {
   ShieldAlert,
   Upload,
 } from "lucide-react";
-import { api, ApiError } from "../lib/api";
+import { api, ApiError, apiUrl } from "../lib/api";
 import type { ClearanceRequest } from "../lib/types";
 import {
   currencyLabels,
@@ -206,7 +206,7 @@ export function RequestDetail() {
               <li key={entry.id} className="relative border-s-2 border-brand-100 ps-4">
                 <span className="absolute -start-[5px] top-1.5 size-2 rounded-full bg-brand-500" aria-hidden />
                 <p className="text-xs font-semibold text-brand-900">{entry.toStatusLabel}</p>
-                <p className="mt-0.5 text-[11px] text-slate-400">{formatDateTime(entry.createdAt)}</p>
+                <p className="mt-0.5 text-[11px] text-slate-600">{formatDateTime(entry.createdAt)}</p>
                 {entry.reason ? <p className="mt-1 text-[11px] leading-5 text-slate-600">{entry.reason}</p> : null}
               </li>
             ))}
@@ -232,12 +232,12 @@ export function RequestDetail() {
                 >
                   <span className="min-w-0">
                     <span className="block truncate text-xs text-slate-700">{document.fileName}</span>
-                    <span className="mt-0.5 block text-[11px] text-slate-400">
+                    <span className="mt-0.5 block text-[11px] text-slate-600">
                       {formatBytes(document.fileSize)} · {formatDate(document.createdAt)}
                     </span>
                   </span>
                   <a
-                    href={document.downloadUrl}
+                    href={apiUrl(document.downloadUrl)}
                     className="flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-[11px] text-brand-700 hover:bg-brand-50"
                   >
                     <Download className="size-3.5" aria-hidden />
@@ -267,7 +267,7 @@ export function RequestDetail() {
               <Upload className="size-4" aria-hidden />
               بارگذاری مدرک تکمیلی
             </Button>
-            <p className="mt-2 text-[11px] text-slate-400">PDF، JPG یا PNG تا ۵ مگابایت.</p>
+            <p className="mt-2 text-[11px] text-slate-600">PDF، JPG یا PNG تا ۵ مگابایت.</p>
             {uploadError ? <p className="mt-1 text-xs text-rose-600">{uploadError}</p> : null}
           </div>
         </section>
@@ -299,7 +299,7 @@ export function RequestDetail() {
                         {fromStaff ? "کارشناس صبا ترخیص" : "شما"}
                       </span>
                     </p>
-                    <p className="text-[11px] text-slate-400">{formatDateTime(item.createdAt)}</p>
+                    <p className="text-[11px] text-slate-600">{formatDateTime(item.createdAt)}</p>
                   </div>
                   <p className="mt-2 whitespace-pre-line text-xs leading-7 text-slate-700">{item.body}</p>
                 </li>

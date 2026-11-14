@@ -121,13 +121,28 @@ cp .env.production.example .env.production   # مقادیر CHANGE_ME را پر 
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 
-- `Dockerfile` سه مرحله دارد: بیلد API، بیلد وب، ایمیج نهایی که `clamscan` را هم دارد (به‌دلیل
-  Fail Closed). اگر امضاها در بیلد دانلود نشدند:
-  `docker compose -f docker-compose.prod.yml exec app freshclam`.
+- `Dockerfile` چهار مرحله دارد: بیلد API، نصب فقط وابستگی‌های اجرایی (`npm ci --omit=dev`)،
+  بیلد وب و ایمیج نهایی. ابزارهای توسعه (tsc، vitest، tsx، supertest، @types) در ایمیج نیستند.
+  `prisma` برای `migrate deploy` در runtime به‌صورت dependency نصب می‌شود.
+- ایمیج نهایی `clamscan` و امضاها را دارد. نبود امضا در بیلد مشکلی ایجاد نمی‌کند:
+  `scripts/docker-entrypoint.sh` هنگام اجرا هر ۶ ساعت (`CLAMAV_UPDATE_INTERVAL_SECONDS`)
+  `freshclam` را اجرا می‌کند و سپس migrations و سرور را بالا می‌آورد.
+- اگر روی همان ماشین دیتابیس توسعه (`docker compose up -d db`) را هم دارید، برای پروژهٔ production
+  نام جدا بدهید (`docker compose -p saba-prod -f docker-compose.prod.yml …`) تا سرویس `db` و
+  پورت ۵۴۳۲ محلی دست‌نخورده بمانند.
+- موتور Prisma با `binaryTargets = ["native", "debian-openssl-3.0.x"]` ساخته می‌شود؛ اگر ایمیج
+  پایه‌ای با OpenSSL دیگر استفاده کنید، این فهرست را هم‌راستا کنید (در غیر این صورت خطای
+  "could not locate the Query Engine" هنگام اجرا دیده می‌شود).
+- **تأیید تشخیص واقعی بدافزار (اجباری پیش از انتشار):**
+  `docker compose -f docker-compose.prod.yml exec app npm run scan:verify` — باید فایل تست
+  EICAR را تشخیص دهد؛ اگر «CLEAN» برگشت، امضاها کهنه/ناقص هستند.
 - اجرای `npx prisma migrate deploy` در `CMD` ایمیج انجام می‌شود؛ بار دوم بی‌اثر است.
 - پورت فقط روی `127.0.0.1:4000` باز می‌شود؛ TLS را با nginx/Caddy جلوی آن بگذارید (بخش ۵) تا
   `COOKIE_SECURE=true` کار کند.
-- `UPLOAD_DIR` و `QUARANTINE_DIR` روی volumeهای نام‌دار هستند و باید در بکاپ باشند.
+- `UPLOAD_DIR` (`/var/lib/saba-tarkhis/storage`) و `QUARANTINE_DIR`
+  (`/var/lib/saba-tarkhis/quarantine`) هر دو روی یک volume به نام `saba_tarkhis_files` هستند تا
+  انتقال فایل اسکن‌شده از قرنطینه به انبار در همان فایل‌سیستم انجام شود (rename اتمیک). این
+  volume باید در بکاپ باشد.
 - حساب مدیر را داخل کانتینر بسازید:
   `docker compose -f docker-compose.prod.yml exec app npm run user:create -- --mobile 09xxxxxxxxx --name "نام مدیر" --role ADMIN`
 
@@ -307,8 +322,8 @@ chmod 600 "$BACKUP_ROOT/db/saba-$STAMP.dump"
 PREV=$(readlink -f "$BACKUP_ROOT/files/latest" 2>/dev/null || true)
 LINK_OPT=""
 [ -n "$PREV" ] && [ -d "$PREV/storage" ] && LINK_OPT="--link-dest=$PREV/storage"
-rsync -a $LINK_OPT /var/lib/saba-tarkhis/storage/ "$BACKUP_ROOT/files/$STAMP/storage/"
-rsync -a $LINK_OPT /var/lib/saba-tarkhis/quarantine/ "$BACKUP_ROOT/files/$STAMP/quarantine/"
+# storage و quarantine زیر یک مسیر هستند و با هم بکاپ می‌شوند
+rsync -a $LINK_OPT /var/lib/saba-tarkhis/ "$BACKUP_ROOT/files/$STAMP/files/"
 ln -sfn "$BACKUP_ROOT/files/$STAMP" "$BACKUP_ROOT/files/latest"
 ```
 
@@ -351,12 +366,12 @@ ALTER DATABASE saba_tarkhis_restore_20260101 RENAME TO saba_tarkhis;
 ### بازیابی فایل‌ها
 
 ```bash
-rsync -a "$BACKUP_ROOT/files/20260101T020000/storage/" /var/lib/saba-tarkhis/storage/
-rsync -a "$BACKUP_ROOT/files/20260101T020000/quarantine/" /var/lib/saba-tarkhis/quarantine/
+rsync -a "$BACKUP_ROOT/files/20260101T020000/files/" /var/lib/saba-tarkhis/
 ```
 
 نسخه دیتابیس و snapshot فایل باید از یک زمان/نقطه باشند تا رکورد بدون فایل یا فایل بدون رکورد
-نماند. بازیابی را حداقل یک‌بار روی staging تمرین کنید.
+نماند. بازیابی را حداقل یک‌بار روی staging تمرین کنید؛ مراحل تمرین در
+[docs/go-live-checklist.md](./go-live-checklist.md) آمده است.
 
 ## ۹) محدودیت نرخ (Backend)
 

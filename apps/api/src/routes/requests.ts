@@ -6,10 +6,16 @@ import { z } from "zod";
 import type { Prisma, RequestStatus, Role } from "@prisma/client";
 import { env } from "../config/env";
 import { badRequest, forbidden, notFound } from "../lib/errors";
-import { removeStoredFile, resolveStoragePath, saveRequestFile } from "../lib/files";
+import {
+  removeStoredFile,
+  resolveStoragePath,
+  saveRequestFile,
+  type SavedFile,
+} from "../lib/files";
 import { ok, parsePage } from "../lib/http";
 import { prisma } from "../lib/prisma";
 import { nextTrackingCode } from "../lib/tracking";
+import { buildIranDateRange } from "../lib/dates";
 import { stripEmpty } from "../lib/validators";
 import { canAccessRequest, requireAuth, requireRole } from "../middleware/auth";
 import { asyncHandler } from "../middleware/error";
@@ -67,17 +73,52 @@ function assertCaseBudget(existingDocuments: { fileSize: number }[], newSize: nu
   }
 }
 
-async function assertUserStorage(userId: string, additionalBytes: number) {
-  const aggregate = await prisma.requestDocument.aggregate({
-    where: { request: { userId } },
-    _sum: { fileSize: true },
+/**
+ * Persists a document row only when the per-case and per-account budgets still
+ * allow it. The account row is locked for the duration of the transaction, so
+ * two parallel uploads of the same user cannot both pass the check and exceed
+ * the quota (a separate pre-check would race).
+ */
+async function persistDocument(input: {
+  requestId: string;
+  ownerUserId: string;
+  uploadedById: string;
+  file: SavedFile;
+}) {
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT id FROM "User" WHERE id = ${input.ownerUserId} FOR UPDATE`;
+
+    const existing = await tx.requestDocument.findMany({
+      where: { requestId: input.requestId },
+      select: { fileSize: true },
+    });
+    assertCaseBudget(existing, input.file.fileSize);
+
+    const aggregate = await tx.requestDocument.aggregate({
+      where: { request: { userId: input.ownerUserId } },
+      _sum: { fileSize: true },
+    });
+    const used = aggregate._sum.fileSize ?? 0;
+    if (used + input.file.fileSize > env.maxUserStorageBytes) {
+      throw badRequest(
+        `حجم کل مدارک حساب شما از سقف مجاز (${env.maxUserStorageBytes / (1024 * 1024)} مگابایت) بیشتر می‌شود.`,
+      );
+    }
+
+    return tx.requestDocument.create({
+      data: {
+        requestId: input.requestId,
+        uploadedById: input.uploadedById,
+        fileName: input.file.fileName,
+        storageKey: input.file.storageKey,
+        mimeType: input.file.mimeType,
+        fileSize: input.file.fileSize,
+        scanStatus: input.file.scanStatus,
+        scanEngine: input.file.scanEngine,
+        scannedAt: input.file.scannedAt,
+      },
+    });
   });
-  const used = aggregate._sum.fileSize ?? 0;
-  if (used + additionalBytes > env.maxUserStorageBytes) {
-    throw badRequest(
-      `حجم کل مدارک حساب شما از سقف مجاز (${env.maxUserStorageBytes / (1024 * 1024)} مگابایت) بیشتر می‌شود.`,
-    );
-  }
 }
 
 export const detailInclude = {
@@ -229,9 +270,6 @@ requestsRouter.post(
         `حجم مجموع مدارک نباید بیشتر از ${env.maxCaseUploadBytes / (1024 * 1024)} مگابایت باشد.`,
       );
     }
-    if (files.length > 0) {
-      await assertUserStorage(user.id, totalNewBytes);
-    }
 
     let created: { id: string; trackingCode: string } | null = null;
 
@@ -291,18 +329,11 @@ requestsRouter.post(
       for (const file of files) {
         const saved = await saveRequestFile(file, created.id);
         savedKeys.push(saved.storageKey);
-        await prisma.requestDocument.create({
-          data: {
-            requestId: created.id,
-            uploadedById: user.id,
-            fileName: saved.fileName,
-            storageKey: saved.storageKey,
-            mimeType: saved.mimeType,
-            fileSize: saved.fileSize,
-            scanStatus: saved.scanStatus,
-            scanEngine: saved.scanEngine,
-            scannedAt: saved.scannedAt,
-          },
+        await persistDocument({
+          requestId: created.id,
+          ownerUserId: user.id,
+          uploadedById: user.id,
+          file: saved,
         });
       }
     } catch (error) {
@@ -356,15 +387,8 @@ requestsRouter.get(
       .parse(req.query);
 
     const { page, pageSize, skip, take } = parsePage(query, 8);
-    const dateFilter =
-      query.from || query.to
-        ? {
-            createdAt: {
-              ...(query.from ? { gte: new Date(query.from) } : {}),
-              ...(query.to ? { lte: new Date(`${query.to}T23:59:59.999Z`) } : {}),
-            },
-          }
-        : {};
+    const dateRange = buildIranDateRange(query.from, query.to);
+    const dateFilter = dateRange ? { createdAt: dateRange } : {};
 
     const where: Prisma.ClearanceRequestWhereInput = {
       userId: user.id,
@@ -449,23 +473,17 @@ requestsRouter.post(
     if (!req.file) {
       throw badRequest("فایلی برای بارگذاری انتخاب نشده است.");
     }
+    // Cheap pre-check for a friendly early error; the authoritative, race-safe
+    // check happens inside persistDocument.
     assertCaseBudget(row.documents, req.file.size);
-    await assertUserStorage(row.userId, req.file.size);
 
     const saved = await saveRequestFile(req.file, row.id);
     try {
-      const document = await prisma.requestDocument.create({
-        data: {
-          requestId: row.id,
-          uploadedById: user.id,
-          fileName: saved.fileName,
-          storageKey: saved.storageKey,
-          mimeType: saved.mimeType,
-          fileSize: saved.fileSize,
-          scanStatus: saved.scanStatus,
-          scanEngine: saved.scanEngine,
-          scannedAt: saved.scannedAt,
-        },
+      const document = await persistDocument({
+        requestId: row.id,
+        ownerUserId: row.userId,
+        uploadedById: user.id,
+        file: saved,
       });
       return ok(res, serializeDocument({ ...document, requestId: row.id }), "مدرک با موفقیت بارگذاری شد.", 201);
     } catch (error) {

@@ -90,7 +90,7 @@ export function FaqsTab() {
                   onClick={() => {
                     if (window.confirm("این پرسش حذف شود؟")) remove.mutate(faq.id);
                   }}
-                  className="rounded-md p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+                  className="rounded-md p-1.5 text-slate-600 hover:bg-rose-50 hover:text-rose-600"
                   aria-label={`حذف ${faq.question}`}
                 >
                   <Trash2 className="size-4" aria-hidden />

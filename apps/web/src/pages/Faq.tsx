@@ -45,7 +45,7 @@ export function Faq() {
           >
             <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-brand-900">
               {faq.question}
-              <span className="text-lg font-normal text-slate-400 transition-transform group-open:rotate-45" aria-hidden>
+              <span className="text-lg font-normal text-slate-600 transition-transform group-open:rotate-45" aria-hidden>
                 +
               </span>
             </summary>

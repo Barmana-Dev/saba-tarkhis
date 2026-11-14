@@ -101,7 +101,7 @@ export function PersianDatePicker({
           }}
           aria-label="پاک کردن تاریخ"
           title="پاک کردن تاریخ"
-          className="absolute end-2 top-1/2 z-10 -translate-y-1/2 rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-rose-600"
+          className="absolute end-2 top-1/2 z-10 -translate-y-1/2 rounded-md p-1 text-slate-600 transition-colors hover:bg-slate-100 hover:text-rose-600"
         >
           <X className="size-3.5" aria-hidden />
         </button>

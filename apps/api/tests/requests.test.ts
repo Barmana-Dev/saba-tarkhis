@@ -176,4 +176,26 @@ describe("clearance requests", () => {
     );
     expect(swapped.status).toBe(404);
   });
+
+  it("enforces the per-case quota when two uploads arrive at once", async () => {
+    await createUser("CUSTOMER", "09121112233");
+    const customer = await loginAgent("09121112233");
+    const created = await submitRequest(customer);
+    const requestId = created.body.data.id as string;
+
+    // A signature-valid PDF of 3 MB: two of them exceed the 5 MB case budget.
+    const bigPdf = Buffer.concat([Buffer.from("%PDF-1.4\n"), Buffer.alloc(3 * 1024 * 1024, 0x20)]);
+    const upload = () =>
+      customer.agent
+        .post(`/api/v1/requests/${requestId}/documents`)
+        .set("x-csrf-token", customer.csrf)
+        .attach("file", bigPdf, "big.pdf");
+
+    const [first, second] = await Promise.all([upload(), upload()]);
+    expect([first.status, second.status].sort()).toEqual([201, 400]);
+
+    const stored = await prisma.requestDocument.findMany({ where: { requestId } });
+    const totalBytes = stored.reduce((sum, document) => sum + document.fileSize, 0);
+    expect(totalBytes).toBeLessThanOrEqual(5 * 1024 * 1024);
+  });
 });

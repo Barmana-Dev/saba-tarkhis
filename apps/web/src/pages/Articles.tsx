@@ -83,7 +83,7 @@ export function Articles() {
 
       <div className="mt-7 grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 md:grid-cols-[1fr_220px]">
         <div className="relative">
-          <Search className="pointer-events-none absolute end-3 top-3.5 size-4 text-slate-400" aria-hidden />
+          <Search className="pointer-events-none absolute end-3 top-3.5 size-4 text-slate-600" aria-hidden />
           <Input
             value={term}
             onChange={(event) => setTerm(event.target.value)}
@@ -127,7 +127,7 @@ export function Articles() {
               </Link>
             </h2>
             <p className="mt-2 grow text-xs leading-6 text-slate-600">{article.excerpt}</p>
-            <p className="mt-3 border-t border-slate-100 pt-3 text-[11px] text-slate-400">
+            <p className="mt-3 border-t border-slate-100 pt-3 text-[11px] text-slate-600">
               انتشار: {formatDate(article.publishedAt)}
             </p>
           </article>

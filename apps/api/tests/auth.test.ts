@@ -124,4 +124,28 @@ describe("authentication", () => {
 
     expect((await agent.get("/api/v1/auth/me")).status).toBe(401);
   });
+
+  it("clears the dead session cookie so public forms work again", async () => {
+    await createUser("CUSTOMER", "09121112233");
+    const { agent, csrf } = await loginAgent("09121112233");
+    await prisma.session.updateMany({ data: { expiresAt: new Date(Date.now() - 60_000) } });
+
+    const message = {
+      name: "کاربر تست",
+      mobile: "09121112233",
+      subject: "پرسش پس از انقضای نشست",
+      message: "متن پیام تستی برای بررسی رفتار کوکی منقضی‌شده",
+      privacyAccepted: true,
+    };
+
+    // The stale cookie makes this request fail closed…
+    const stale = await agent.post("/api/v1/contact").set("x-csrf-token", csrf).send(message);
+    expect(stale.status).toBe(401);
+    expect(String(stale.headers["set-cookie"] ?? "")).toContain("st_session=;");
+    expect(await prisma.session.count()).toBe(0);
+
+    // …but the browser has been told to drop it, so the retry succeeds anonymously.
+    const retry = await agent.post("/api/v1/contact").send(message);
+    expect(retry.status).toBe(201);
+  });
 });

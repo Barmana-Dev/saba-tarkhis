@@ -56,7 +56,7 @@ export function AdminUsers() {
 
       <div className="grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:grid-cols-[1fr_200px]">
         <div className="relative">
-          <Search className="pointer-events-none absolute end-3 top-3.5 size-4 text-slate-400" aria-hidden />
+          <Search className="pointer-events-none absolute end-3 top-3.5 size-4 text-slate-600" aria-hidden />
           <Input
             value={term}
             onChange={(event) => setTerm(event.target.value)}
@@ -102,7 +102,7 @@ export function AdminUsers() {
                   <tr key={item.id} className="hover:bg-slate-50/60">
                     <td className="px-4 py-3">
                       <span className="block font-medium text-slate-800">{item.fullName}</span>
-                      <span className="num mt-0.5 block text-[11px] text-slate-400">{item.mobile}</span>
+                      <span className="num mt-0.5 block text-[11px] text-slate-600">{item.mobile}</span>
                     </td>
                     <td className="px-4 py-3 text-[11px] text-slate-600">{item.email ?? "—"}</td>
                     <td className="num px-4 py-3 text-slate-600">

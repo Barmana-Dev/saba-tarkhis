@@ -70,7 +70,7 @@ export function MessagesTab() {
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] text-slate-400">{formatDateTime(message.createdAt)}</span>
+                <span className="text-[11px] text-slate-600">{formatDateTime(message.createdAt)}</span>
                 <Select
                   value={message.status}
                   onChange={(event) =>

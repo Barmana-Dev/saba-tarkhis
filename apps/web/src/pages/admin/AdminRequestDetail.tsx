@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Download, FileText, MessageSquare, ShieldAlert, UserCheck } from "lucide-react";
-import { api, ApiError } from "../../lib/api";
+import { api, ApiError, apiUrl } from "../../lib/api";
 import type { ClearanceRequest, RequestStatus } from "../../lib/types";
 import {
   currencyLabels,
@@ -198,12 +198,12 @@ export function AdminRequestDetail() {
                   <li key={document.id} className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 px-3 py-2">
                     <span className="min-w-0">
                       <span className="block truncate text-xs text-slate-700">{document.fileName}</span>
-                      <span className="mt-0.5 block text-[11px] text-slate-400">
+                      <span className="mt-0.5 block text-[11px] text-slate-600">
                         {formatBytes(document.fileSize)} · {formatDate(document.createdAt)}
                       </span>
                     </span>
                     <a
-                      href={document.downloadUrl}
+                      href={apiUrl(document.downloadUrl)}
                       className="flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-[11px] text-brand-700 hover:bg-brand-50"
                     >
                       <Download className="size-3.5" aria-hidden />
@@ -245,7 +245,7 @@ export function AdminRequestDetail() {
                       >
                         {item.visibility === "INTERNAL" ? "یادداشت داخلی" : "قابل مشاهده مشتری"}
                       </span>
-                      <span className="text-[11px] text-slate-400">{formatDateTime(item.createdAt)}</span>
+                      <span className="text-[11px] text-slate-600">{formatDateTime(item.createdAt)}</span>
                     </div>
                   </div>
                   <p className="mt-2 whitespace-pre-line text-xs leading-7 text-slate-700">{item.body}</p>
@@ -295,7 +295,7 @@ export function AdminRequestDetail() {
                 <li key={entry.id} className="relative border-s-2 border-brand-100 ps-4 text-xs">
                   <span className="absolute -start-[5px] top-1.5 size-2 rounded-full bg-brand-500" aria-hidden />
                   <p className="font-semibold text-brand-900">{entry.toStatusLabel}</p>
-                  <p className="mt-0.5 text-[11px] text-slate-400">
+                  <p className="mt-0.5 text-[11px] text-slate-600">
                     {entry.changedBy.fullName} · {formatDateTime(entry.createdAt)}
                   </p>
                   {entry.reason ? <p className="mt-1 leading-5 text-slate-600">{entry.reason}</p> : null}

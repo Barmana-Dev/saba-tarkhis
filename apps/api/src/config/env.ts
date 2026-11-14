@@ -3,7 +3,8 @@ import { z } from "zod";
 
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-  PORT: z.coerce.number().int().positive().default(4000),
+  // 0 lets the OS pick a free port (some CI runners export PORT=0).
+  PORT: z.coerce.number().int().min(0).max(65535).default(4000),
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
   APP_ORIGIN: z.string().min(1).default("http://localhost:3000"),
   SESSION_TTL_DAYS: z.coerce.number().int().positive().max(30).default(7),
@@ -27,7 +28,13 @@ const envSchema = z.object({
   TRUST_PROXY: z.enum(["true", "false"]).optional(),
 });
 
-const parsed = envSchema.safeParse(process.env);
+// Some shells and CI runners export empty variables (e.g. `PORT=`). Treat those
+// as "not set" so the documented default applies instead of a validation error.
+const rawEnv = Object.fromEntries(
+  Object.entries(process.env).filter(([, value]) => value !== ""),
+);
+
+const parsed = envSchema.safeParse(rawEnv);
 
 if (!parsed.success) {
   const details = parsed.error.issues
