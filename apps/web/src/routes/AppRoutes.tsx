@@ -13,6 +13,7 @@ import { ArticleDetail } from "../pages/ArticleDetail";
 import { Faq } from "../pages/Faq";
 import { About } from "../pages/About";
 import { Contact } from "../pages/Contact";
+import { Privacy, Terms } from "../pages/Legal";
 import { Login } from "../pages/Login";
 import { Register } from "../pages/Register";
 import { NotFound } from "../pages/NotFound";
@@ -62,6 +63,8 @@ export function AppRoutes() {
         <Route path="/faq" element={<PublicLayout><Faq /></PublicLayout>} />
         <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
         <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
+        <Route path="/privacy" element={<PublicLayout><Privacy /></PublicLayout>} />
+        <Route path="/terms" element={<PublicLayout><Terms /></PublicLayout>} />
         <Route path="/login" element={<PublicLayout><Login /></PublicLayout>} />
         <Route path="/register" element={<PublicLayout><Register /></PublicLayout>} />
 

@@ -47,6 +47,8 @@ export function Footer() {
               { to: "/documents-guide", label: "راهنمای مدارک" },
               { to: "/articles", label: "مقالات آموزشی" },
               { to: "/faq", label: "سؤالات متداول" },
+              { to: "/privacy", label: "حریم خصوصی" },
+              { to: "/terms", label: "شرایط استفاده" },
             ].map((item) => (
               <li key={item.to}>
                 <Link to={item.to} className="text-slate-400 transition-colors hover:text-white">

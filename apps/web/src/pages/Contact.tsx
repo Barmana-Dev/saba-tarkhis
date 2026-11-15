@@ -123,7 +123,14 @@ export function Contact() {
 
             <Checkbox
               id="privacyAccepted"
-              label="سیاست حریم خصوصی را مطالعه کرده‌ام و با ثبت و نگهداری این اطلاعات برای رسیدگی به درخواست موافقم."
+              label={
+                <>
+                  <Link to="/privacy" target="_blank" rel="noreferrer" className="text-accent-700 underline underline-offset-2">
+                    سیاست حریم خصوصی
+                  </Link>{" "}
+                  را مطالعه کرده‌ام و با ثبت و نگهداری این اطلاعات برای رسیدگی به درخواست موافقم.
+                </>
+              }
               error={errors.privacyAccepted?.message}
               {...register("privacyAccepted")}
             />

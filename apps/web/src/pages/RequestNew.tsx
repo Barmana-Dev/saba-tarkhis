@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Check, FileText, Paperclip, Trash2, Upload } from "lucide-react";
 import { api, ApiError, fieldErrorsToMap } from "../lib/api";
 import { requestFormSchema, type RequestFormValues } from "../lib/schemas";
@@ -386,7 +386,19 @@ export function RequestNew() {
 
               <Checkbox
                 id="privacyAccepted"
-                label="صحت اطلاعات واردشده را تأیید می‌کنم و سیاست حریم خصوصی و شرایط استفاده از سامانه را می‌پذیرم."
+                label={
+                  <>
+                    صحت اطلاعات واردشده را تأیید می‌کنم و{" "}
+                    <Link to="/privacy" target="_blank" rel="noreferrer" className="text-accent-700 underline underline-offset-2">
+                      سیاست حریم خصوصی
+                    </Link>{" "}
+                    و{" "}
+                    <Link to="/terms" target="_blank" rel="noreferrer" className="text-accent-700 underline underline-offset-2">
+                      شرایط استفاده
+                    </Link>{" "}
+                    از سامانه را می‌پذیرم.
+                  </>
+                }
                 error={errors.privacyAccepted?.message}
                 {...register("privacyAccepted")}
               />
