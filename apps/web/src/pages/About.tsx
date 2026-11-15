@@ -34,6 +34,18 @@ export function About() {
         </p>
       </header>
 
+      <figure className="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-card">
+        <img
+          src="/images/about-review.svg"
+          alt="بررسی اسناد و چک‌لیست مدارک گمرکی روی میز کار"
+          width={1000}
+          height={750}
+          loading="lazy"
+          decoding="async"
+          className="h-full w-full object-cover"
+        />
+      </figure>
+
       <section className="mt-9 grid gap-5 md:grid-cols-3" aria-labelledby="values">
         <h2 id="values" className="sr-only">شیوه همکاری</h2>
         {[
