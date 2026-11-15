@@ -43,7 +43,7 @@ export function Home() {
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(20,184,166,0.22),transparent_45%),radial-gradient(circle_at_80%_0%,rgba(59,130,246,0.18),transparent_40%)]"
         />
         <div className="relative mx-auto grid max-w-7xl gap-12 px-4 py-16 md:py-24 lg:grid-cols-[1.15fr_0.85fr] lg:items-stretch lg:px-8">
-          <div className="lg:flex lg:flex-col lg:justify-center">
+          <div className="lg:flex lg:flex-col lg:justify-between">
             <h1 className="text-3xl font-bold leading-[1.35] md:text-[2.75rem] md:leading-[1.3]">
               ترخیص کالای شما، با راهنمایی تخصصی و
               <span className="text-accent-500"> پیگیری شفاف</span>
@@ -88,11 +88,11 @@ export function Home() {
               <img
                 src="/images/hero-port.svg"
                 alt="تصویرسازی بندر و کشتی کانتینری در حال بارگیری کالا"
-                width={920}
-                height={600}
+                width={900}
+                height={580}
                 fetchPriority="high"
                 decoding="async"
-                className="h-full w-full object-contain"
+                className="h-full w-full object-cover"
               />
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/5 px-5 py-4 backdrop-blur-sm">
