@@ -109,7 +109,7 @@ export function Dashboard() {
 
       <div className="mt-6 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 md:flex-row md:items-center">
         <div className="relative grow">
-          <Search className="pointer-events-none absolute end-3 top-3.5 size-4 text-slate-600" aria-hidden />
+          <Search className="pointer-events-none absolute inset-e-3 top-3.5 size-4 text-slate-600" aria-hidden />
           <Input
             value={term}
             onChange={(event) => setTerm(event.target.value)}

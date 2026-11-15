@@ -68,7 +68,7 @@ export function ArticleDetail() {
       </nav>
 
       <p className="text-xs font-semibold text-accent-700">{data.category?.name ?? "مقاله آموزشی"}</p>
-      <h1 className="mt-2 text-3xl font-bold leading-[1.5] text-brand-900">{data.title}</h1>
+      <h1 className="mt-2 text-3xl font-bold leading-normal text-brand-900">{data.title}</h1>
       <p className="mt-3 text-sm leading-7 text-slate-600">{data.excerpt}</p>
 
       <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 border-y border-slate-200 py-3 text-[11px] text-slate-500">
