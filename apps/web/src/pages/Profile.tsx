@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { api, ApiError } from "../lib/api";
-import { useAuth } from "../lib/auth";
+import { useAuth } from "../lib/auth-context";
 import type { CurrentUser } from "../lib/types";
 import { PanelLayout } from "../components/Layout";
 import { Seo } from "../components/Seo";

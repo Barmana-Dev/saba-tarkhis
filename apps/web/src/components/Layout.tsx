@@ -1,8 +1,8 @@
 import { type ReactNode } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { FileText, LayoutDashboard, PlusCircle, UserRound, Users } from "lucide-react";
-import { useAuth } from "../lib/auth";
-import { cn } from "./ui";
+import { useAuth } from "../lib/auth-context";
+import { cn } from "../lib/cn";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 

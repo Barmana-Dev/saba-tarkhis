@@ -139,6 +139,10 @@ export type RequestDetailRow = Prisma.ClearanceRequestGetPayload<{ include: type
 
 const numericText = /^[0-9۰-۹]+([.,][0-9۰-۹]{1,3})?$/;
 
+/** The web form submits empty strings for fields it left blank. */
+const blankToUndefined = (value: unknown) =>
+  typeof value === "string" && value.trim() === "" ? undefined : value;
+
 export const clearanceRequestSchema = z.object({
   applicantType: z.enum(["INDIVIDUAL", "COMPANY"]),
   applicantName: z.string().trim().max(160).optional(),
@@ -149,20 +153,32 @@ export const clearanceRequestSchema = z.object({
     .min(3, "شرح کالا را وارد کنید.")
     .max(2000, "شرح کالا بیش از حد طولانی است."),
   category: z.string().trim().max(120).optional(),
-  hsCode: z
-    .string()
-    .trim()
-    .regex(/^[0-9۰-۹]{4,10}$/, "کد تعرفه باید بین ۴ تا ۱۰ رقم باشد.")
-    .optional(),
+  hsCode: z.preprocess(
+    blankToUndefined,
+    z
+      .string()
+      .trim()
+      .regex(/^[0-9۰-۹]{4,10}$/, "کد تعرفه باید بین ۴ تا ۱۰ رقم باشد.")
+      .optional(),
+  ),
   procedureType: z.enum(["IMPORT", "EXPORT", "TRANSIT", "OTHER", "UNKNOWN"]).default("UNKNOWN"),
   originCountry: z.string().trim().max(80).optional(),
   destinationCountry: z.string().trim().max(80).optional(),
   customsLocation: z.string().trim().max(120).optional(),
   transportMode: z.enum(["SEA", "ROAD", "AIR", "RAIL", "UNKNOWN"]).default("UNKNOWN"),
-  quantity: z.string().trim().regex(numericText, "مقدار باید عددی باشد.").optional(),
+  quantity: z.preprocess(
+    blankToUndefined,
+    z.string().trim().regex(numericText, "مقدار باید عددی باشد.").optional(),
+  ),
   quantityUnit: z.string().trim().max(30).optional(),
-  estimatedValue: z.string().trim().regex(numericText, "ارزش تقریبی باید عددی باشد.").optional(),
-  currency: z.enum(["IRR", "USD", "EUR", "AED", "CNY", "OTHER"]).optional(),
+  estimatedValue: z.preprocess(
+    blankToUndefined,
+    z.string().trim().regex(numericText, "ارزش تقریبی باید عددی باشد.").optional(),
+  ),
+  currency: z.preprocess(
+    blankToUndefined,
+    z.enum(["IRR", "USD", "EUR", "AED", "CNY", "OTHER"]).optional(),
+  ),
   cargoStatus: z.string().trim().max(1000).optional(),
   notes: z.string().trim().max(4000, "توضیحات بیش از حد طولانی است.").optional(),
   privacyAccepted: z.boolean().refine((value) => value === true, {

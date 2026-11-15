@@ -10,10 +10,7 @@ import {
   type TextareaHTMLAttributes,
 } from "react";
 import { AlertCircle, CheckCircle2, Info, Loader2 } from "lucide-react";
-
-export function cn(...classes: (string | false | null | undefined)[]): string {
-  return classes.filter(Boolean).join(" ");
-}
+import { cn } from "../lib/cn";
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "ghost" | "danger";

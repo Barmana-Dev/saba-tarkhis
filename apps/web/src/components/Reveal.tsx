@@ -1,39 +1,6 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { cn } from "./ui";
-
-/**
- * Observes an element and flips to `true` once it is close to the viewport.
- * Falls back to visible when IntersectionObserver is unavailable.
- */
-export function useInView<T extends HTMLElement>(rootMargin = "140px") {
-  const ref = useRef<T | null>(null);
-  const [inView, setInView] = useState(false);
-
-  useEffect(() => {
-    const element = ref.current;
-    if (!element) return;
-
-    if (typeof IntersectionObserver === "undefined") {
-      setInView(true);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          setInView(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin, threshold: 0.05 },
-    );
-
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [rootMargin]);
-
-  return { ref, inView };
-}
+import type { ReactNode } from "react";
+import { cn } from "../lib/cn";
+import { useInView } from "../lib/useInView";
 
 /** Fades/slides content in the first time it enters the viewport. */
 export function Reveal({

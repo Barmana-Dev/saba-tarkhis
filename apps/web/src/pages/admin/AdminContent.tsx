@@ -7,7 +7,7 @@ import { ArticlesTab } from "../../components/admin/ArticlesTab";
 import { FaqsTab } from "../../components/admin/FaqsTab";
 import { MessagesTab } from "../../components/admin/MessagesTab";
 import { SettingsTab } from "../../components/admin/SettingsTab";
-import { cn } from "../../components/ui";
+import { cn } from "../../lib/cn";
 
 const tabs = [
   { id: "services", label: "خدمات", icon: Layers },

@@ -1,6 +1,6 @@
 import { statusMeta } from "../lib/format";
 import type { RequestStatus } from "../lib/types";
-import { cn } from "./ui";
+import { cn } from "../lib/cn";
 
 export function RequestStatusBadge({
   status,

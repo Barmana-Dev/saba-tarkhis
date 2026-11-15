@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
 import { ShieldAlert } from "lucide-react";
-import { useAuth } from "../lib/auth";
+import { useAuth } from "../lib/auth-context";
 import type { Role } from "../lib/types";
 import { EmptyState, Spinner } from "./ui";
 import { Seo } from "./Seo";

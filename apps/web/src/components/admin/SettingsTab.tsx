@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, ApiError } from "../../lib/api";
 import { Alert, Button, Card, Field, Input, Textarea } from "../ui";
@@ -17,6 +17,7 @@ const fields = [
 export function SettingsTab() {
   const queryClient = useQueryClient();
   const [values, setValues] = useState<Record<string, string>>({});
+  const [loaded, setLoaded] = useState<Record<string, string> | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
   const settings = useQuery({
@@ -24,9 +25,12 @@ export function SettingsTab() {
     queryFn: () => api.get<Record<string, string>>("/admin/settings"),
   });
 
-  useEffect(() => {
-    if (settings.data) setValues(settings.data);
-  }, [settings.data]);
+  // Adjust state during render once the query resolves, instead of an effect
+  // that would render twice on every fetch.
+  if (settings.data && settings.data !== loaded) {
+    setLoaded(settings.data);
+    setValues(settings.data);
+  }
 
   const save = useMutation({
     mutationFn: () => api.patch("/admin/settings", { settings: values }),

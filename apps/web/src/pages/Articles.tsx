@@ -14,10 +14,13 @@ export function Articles() {
   const category = params.get("category") ?? "";
   const queryParam = params.get("q") ?? "";
   const [term, setTerm] = useState(queryParam);
+  const [syncedQuery, setSyncedQuery] = useState(queryParam);
 
-  useEffect(() => {
+  // Adjust state during render instead of a synchronising effect.
+  if (queryParam !== syncedQuery) {
+    setSyncedQuery(queryParam);
     setTerm(queryParam);
-  }, [queryParam]);
+  }
 
   useEffect(() => {
     const timer = setTimeout(() => {

@@ -83,13 +83,13 @@ export function Footer() {
               <span>{address}</span>
             </li>
           </ul>
-          <p className="mt-4 text-[11px] text-slate-500">
+          <p className="mt-4 text-[11px] text-slate-300">
             اطلاعات تماس پس از تأیید کارفرما در این بخش منتشر می‌شود.
           </p>
         </div>
       </div>
 
-      <div className="border-t border-white/5 py-6 text-center text-[11px] text-slate-500">
+      <div className="border-t border-white/5 py-6 text-center text-[11px] text-slate-300">
         تمامی حقوق برای مجموعه «صبا ترخیص» محفوظ است. · این سامانه به سامانه‌های رسمی گمرکی متصل نیست.
       </div>
     </footer>

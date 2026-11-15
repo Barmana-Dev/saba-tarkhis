@@ -4,7 +4,7 @@ import { Search } from "lucide-react";
 import { api, ApiError, queryString } from "../../lib/api";
 import type { AdminUser, Paginated, Role } from "../../lib/types";
 import { formatDate, roleLabels, toPersianDigits } from "../../lib/format";
-import { useAuth } from "../../lib/auth";
+import { useAuth } from "../../lib/auth-context";
 import { PanelLayout } from "../../components/Layout";
 import { Seo } from "../../components/Seo";
 import { Alert, Button, EmptyState, Input, Select, Skeleton } from "../../components/ui";

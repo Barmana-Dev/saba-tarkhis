@@ -5,7 +5,7 @@ import { FileText, MessageSquare, PlusCircle, Search } from "lucide-react";
 import { api, queryString } from "../lib/api";
 import type { Paginated, RequestStatus, RequestSummary } from "../lib/types";
 import { formatDate, requestStatuses, statusMeta, toPersianDigits } from "../lib/format";
-import { useAuth } from "../lib/auth";
+import { useAuth } from "../lib/auth-context";
 import { PanelLayout } from "../components/Layout";
 import { RequestStatusBadge } from "../components/RequestStatusBadge";
 import { Seo } from "../components/Seo";
@@ -26,8 +26,14 @@ export function Dashboard() {
   const page = Number(params.get("page") ?? 1);
   const queryParam = params.get("q") ?? "";
   const [term, setTerm] = useState(queryParam);
+  const [syncedQuery, setSyncedQuery] = useState(queryParam);
 
-  useEffect(() => setTerm(queryParam), [queryParam]);
+  // Adjusting state during render (React's recommended replacement for a
+  // syncing effect): the input follows the URL, including back/forward.
+  if (queryParam !== syncedQuery) {
+    setSyncedQuery(queryParam);
+    setTerm(queryParam);
+  }
 
   useEffect(() => {
     const timer = setTimeout(() => {

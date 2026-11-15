@@ -42,6 +42,27 @@ describe("clearance requests", () => {
     expect(stored?.documents).toHaveLength(1);
   });
 
+  it("accepts the blank optional fields the web form submits", async () => {
+    await createUser("CUSTOMER", "09121112233");
+    const customer = await loginAgent("09121112233");
+
+    const response = await submitRequest(customer, {
+      hsCode: "",
+      quantity: "",
+      estimatedValue: "",
+      currency: "",
+      category: "",
+      notes: "",
+    });
+
+    expect(response.status).toBe(201);
+    const stored = await prisma.clearanceRequest.findUnique({ where: { id: response.body.data.id } });
+    expect(stored?.hsCode).toBeNull();
+    expect(stored?.quantity).toBeNull();
+    expect(stored?.estimatedValue).toBeNull();
+    expect(stored?.currency).toBeNull();
+  });
+
   it("rejects invalid payloads and unsafe files without creating a request", async () => {
     await createUser("CUSTOMER", "09121112233");
     const customer = await loginAgent("09121112233");

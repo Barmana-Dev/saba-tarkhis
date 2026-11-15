@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -55,7 +55,7 @@ export function RequestNew() {
     register,
     handleSubmit,
     trigger,
-    watch,
+    control,
     setError,
     formState: { errors },
   } = useForm<RequestFormValues>({
@@ -108,7 +108,9 @@ export function RequestNew() {
     },
   });
 
-  const values = watch();
+  // `useWatch` gives the same live values without `watch()` (which React
+  // Compiler cannot memoise safely).
+  const values = useWatch({ control });
 
   async function goNext() {
     const valid = await trigger(fieldsByStep[step]);
@@ -405,13 +407,28 @@ export function RequestNew() {
                   ["شرح کالا", values.goodsDescription],
                   ["دسته کالا", values.category || "—"],
                   ["کد تعرفه", values.hsCode || "—"],
-                  ["رویه", procedureLabels[values.procedureType] ?? values.procedureType],
+                  [
+                    "رویه",
+                    values.procedureType
+                      ? (procedureLabels[values.procedureType] ?? values.procedureType)
+                      : "—",
+                  ],
                   ["مبدأ", values.originCountry || "—"],
                   ["مقصد", values.destinationCountry || "—"],
                   ["گمرک / بندر", values.customsLocation || "—"],
-                  ["روش حمل", transportLabels[values.transportMode] ?? values.transportMode],
+                  [
+                    "روش حمل",
+                    values.transportMode
+                      ? (transportLabels[values.transportMode] ?? values.transportMode)
+                      : "—",
+                  ],
                   ["مقدار", [values.quantity, values.quantityUnit].filter(Boolean).join(" ") || "—"],
-                  ["ارزش تقریبی", values.estimatedValue ? `${values.estimatedValue} ${currencyLabels[values.currency] ?? ""}` : "—"],
+                  [
+                    "ارزش تقریبی",
+                    values.estimatedValue
+                      ? `${values.estimatedValue} ${values.currency ? (currencyLabels[values.currency] ?? "") : ""}`.trim()
+                      : "—",
+                  ],
                   ["مدارک", files.length > 0 ? files.map((file) => file.name).join("، ") : "بدون مدرک"],
                   ["توضیحات", values.notes || "—"],
                 ].map(([label, value]) => (

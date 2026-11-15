@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { LayoutDashboard, LogOut, Menu, User, X } from "lucide-react";
-import { useAuth } from "../lib/auth";
+import { useAuth } from "../lib/auth-context";
 import { scrollToTop } from "../lib/scroll";
-import { cn } from "./ui";
+import { cn } from "../lib/cn";
 
 const navItems = [
   { to: "/services", label: "خدمات" },
@@ -21,10 +21,6 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    setOpen(false);
-  }, [location.pathname]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -51,9 +47,9 @@ export function Header() {
   // route, which does nothing; glide back to the top of that page instead.
   function handleNavClick(to: string) {
     return (event: React.MouseEvent<HTMLAnchorElement>) => {
+      setOpen(false);
       if (location.pathname === to) {
         event.preventDefault();
-        setOpen(false);
         scrollToTop();
       }
     };
@@ -181,13 +177,18 @@ export function Header() {
           <div className="mt-4 grid gap-2 border-t border-slate-100 pt-4">
             <Link
               to="/requests/new"
+              onClick={() => setOpen(false)}
               className="rounded-lg bg-brand-700 px-4 py-2.5 text-center text-sm font-semibold text-white"
             >
               ثبت درخواست ترخیص
             </Link>
             {user ? (
               <>
-                <Link to={panelLink} className="rounded-lg border border-slate-200 px-4 py-2.5 text-center text-sm">
+                <Link
+                  to={panelLink}
+                  onClick={() => setOpen(false)}
+                  className="rounded-lg border border-slate-200 px-4 py-2.5 text-center text-sm"
+                >
                   {user.role === "CUSTOMER" ? "پنل من" : "پنل مدیریت"}
                 </Link>
                 <button
@@ -199,7 +200,11 @@ export function Header() {
                 </button>
               </>
             ) : (
-              <Link to="/login" className="rounded-lg border border-slate-200 px-4 py-2.5 text-center text-sm">
+              <Link
+                to="/login"
+                onClick={() => setOpen(false)}
+                className="rounded-lg border border-slate-200 px-4 py-2.5 text-center text-sm"
+              >
                 ورود / ثبت‌نام
               </Link>
             )}

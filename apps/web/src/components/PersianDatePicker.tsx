@@ -7,7 +7,8 @@ import DatePickerPackage, {
 import persian from "react-date-object/calendars/persian";
 import persian_fa from "react-date-object/locales/persian_fa";
 import "react-multi-date-picker/styles/colors/teal.css";
-import { cn, inputClass } from "./ui";
+import { cn } from "../lib/cn";
+import { inputClass } from "./ui";
 
 // The package is CJS; Vite's dev prebundle can expose the component on
 // `default.default`. Resolve both shapes so dev and build agree.

@@ -15,7 +15,7 @@ import {
   transportLabels,
 } from "../../lib/format";
 import { statusTransitions } from "../../lib/workflow";
-import { useAuth } from "../../lib/auth";
+import { useAuth } from "../../lib/auth-context";
 import { PanelLayout } from "../../components/Layout";
 import { RequestStatusBadge } from "../../components/RequestStatusBadge";
 import { Seo } from "../../components/Seo";

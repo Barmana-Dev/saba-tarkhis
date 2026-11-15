@@ -11,7 +11,7 @@ import {
   statusMeta,
   toPersianDigits,
 } from "../../lib/format";
-import { useAuth } from "../../lib/auth";
+import { useAuth } from "../../lib/auth-context";
 import { PanelLayout } from "../../components/Layout";
 import { RequestStatusBadge } from "../../components/RequestStatusBadge";
 import { PersianDatePicker } from "../../components/PersianDatePicker";
@@ -28,8 +28,14 @@ export function AdminDashboard() {
   const to = params.get("to") ?? "";
   const queryParam = params.get("q") ?? "";
   const [term, setTerm] = useState(queryParam);
+  const [syncedQuery, setSyncedQuery] = useState(queryParam);
 
-  useEffect(() => setTerm(queryParam), [queryParam]);
+  // Adjusting state during render keeps the input in sync with the URL without
+  // an extra effect render.
+  if (queryParam !== syncedQuery) {
+    setSyncedQuery(queryParam);
+    setTerm(queryParam);
+  }
 
   useEffect(() => {
     const timer = setTimeout(() => {

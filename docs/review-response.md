@@ -95,8 +95,67 @@
       قابلیت‌های احراز هویت پیاده‌نشده (بازیابی رمز، OTP، ایمیل/پیامک) در
       `docs/go-live-checklist.md` به‌صورت چک‌لیست اقدام‌محور آمده است.
 
+## دور دوم بازخورد — «گزارش اجرای پروژه»
+
+### ۱) آسیب‌پذیری‌های زنجیره تست — انجام شد
+
+- [x] `vitest` از `^3.2.4` به `^4.1.12` ارتقا یافت (`apps/api/package.json` + lock به‌روز شد).
+      advisory برای `vitest 0.0.95–4.1.10`، `@vitest/mocker <=4.1.11` و `tinypool <=2.1.1` بود؛ در
+      4.1.12 نسخه `@vitest/mocker` هم 4.1.12 است و `tinypool` از درخت حذف شده.
+- [x] `npm audit` در `apps/api` و `apps/web`: **0 vulnerabilities** (شامل dev).
+- [x] سازگاری با اجرای واقعی بررسی شد، نه فقط ارتقا: `npx vitest run` → **۳۹/۳۹ تست سبز**
+      (پس از افزودن یک تست رگرسیون) و `tsc --noEmit` بدون خطا.
+
+### ۲) کنتراست متن ریز فوتر — انجام شد
+
+- [x] `apps/web/src/components/Footer.tsx`: دو نقطه `text-slate-500` روی پس‌زمینه `bg-brand-950`
+      (`#0c1e2f`) به `text-slate-300` تغییر کرد؛ نسبت کنتراست از ۳٫۵۴:۱ به حدود ۷٫۵:۱ رسید.
+      `text-slate-400` (حدود ۵٫۹:۱) دست‌نخورده ماند.
+
+### ۳) هشدارهای `npm run lint` — انجام شد
+
+- [x] `npm run lint` (oxlint، ۵۸ فایل): **۰ خطا، ۰ هشدار**.
+- [x] توابع غیرکامپوننتی از فایل‌های کامپوننت جدا شدند تا هشدار fast-refresh برطرف شود:
+      `lib/cn.ts`، `lib/useInView.ts`، `lib/auth-context.ts` (context + `useAuth` +
+      `homePathForRole` + `safeNextPath`)؛ `lib/auth.tsx` فقط `AuthProvider` را export می‌کند و
+      `ui.tsx` دیگر `cn` را export نمی‌کند.
+- [x] همگام‌سازی state با URL/پاسخ API در `Header.tsx`، `Dashboard.tsx`، `AdminDashboard.tsx`،
+      `Articles.tsx` و `SettingsTab.tsx` با الگوی «تنظیم state در render» انجام شد؛ قاعده
+      `set-state-in-effect` غیرفعال نشد.
+- [x] `RequestNew.tsx`: `watch()` با `useWatch({ control })` جایگزین شد (هشدار
+      `incompatible-library`).
+
+### ۴) تست مرورگر مسیرهای اصلی — انجام شد
+
+- [x] Playwright در `apps/web/e2e` با ۵ سناریو: ثبت‌نام/خروج/ورود مجدد، رد رمز نادرست،
+      ثبت درخواست ۴ مرحله‌ای با آپلود PDF و دریافت `ST-YYYY-NNNNNN`، الزامی بودن رضایت‌نامه،
+      و تغییر وضعیت پرونده توسط کارشناس.
+- [x] `apps/web/playwright.config.ts` خودش API و وب را بالا می‌آورد؛ دستور: `npm run test:e2e`
+      (پیش‌نیازها در `docs/manual-qa.md` بخش ۰).
+- [x] **باگ واقعی کشف و رفع شد**: هنگام اجرای همین تست معلوم شد ارسال فرم با فیلدهای عددی
+      خالی (کد تعرفه/مقدار/ارزش) با `400 VALIDATION_ERROR` رد می‌شد و مشتری ایرانی که این فیلدها
+      را پر نمی‌کند هرگز نمی‌توانست درخواست ثبت کند. در `apps/api/src/routes/requests.ts` مقدار
+      رشته خالی برای این فیلدها و `currency` با `blankToUndefined` نرمال می‌شود و تست رگرسیون
+      «accepts the blank optional fields the web form submits» اضافه شد.
+- [x] اجرا: `5 passed (21.1s)` — اجرا روی Chrome سیستمی با `E2E_CHANNEL=chrome` (دانلود مرورگر
+      Playwright در شبکه این محیط مسدود بود).
+
+### ۵) پیشنهادهایی که انجام نشد (نیازمند کارفرما)
+
+- [ ] **عکس‌های واقعی کسب‌وکار**: نیازمند دارایی/مجوز استفاده از عکس است؛ مشخصات فنی درخواستی
+      (اندازه، نسبت، حجم، متن جایگزین) در `docs/go-live-checklist.md` بخش ۱ ثبت شد.
+- [ ] **اطلاعات واقعی شرکت** (تلفن، ایمیل، آدرس، ساعات کاری): در دسترس نیست؛ محل ورود آن
+      پنل مدیریت → تنظیمات است و در چک‌لیست پیش از انتشار باقی مانده است.
+
+### ۶) یادداشت‌های پیش از استقرار — ثبت شد
+
+- [x] Node.js: بیلد/تست با Node 24 LTS انجام شده است؛ `engines.node` روی `>=24`. روی سرور،
+      `node -v` و یک `npm test` ثبت شود (`docs/go-live-checklist.md` بخش ۵).
+- [x] ClamAV: در کانتینر ساخته‌شده `npm run scan:verify` با امضاهای به‌روز (`freshclam`،
+      ClamAV 1.4.6/28183) فایل EICAR را با `Eicar-Signature FOUND` تشخیص داد. این بررسی روی
+      محیط production هم باید تکرار شود (`docs/go-live-checklist.md` بخش ۵).
+
 ## روش تحویل
 
-- [x] کار روی شاخه `fix/review-feedback` با commitهای جدا و push به GitHub.
-- [ ] Pull Request (لینک در گزارش تحویل ارسال شده است).
+- [x] تمام تغییرات (دور اول و دور دوم) روی `main` کامیت شده‌اند؛ شاخه جداگانه‌ای وجود ندارد.
 - [x] شرح تغییرات و تست‌های اجراشده در همین سند و در PR آمده است.

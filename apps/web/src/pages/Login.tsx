@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { LogIn, ShieldCheck } from "lucide-react";
 import type { z } from "zod";
 import { loginSchema } from "../lib/schemas";
-import { homePathForRole, safeNextPath, useAuth } from "../lib/auth";
+import { homePathForRole, safeNextPath, useAuth } from "../lib/auth-context";
 import { ApiError } from "../lib/api";
 import { Seo } from "../components/Seo";
 import { Alert, Button, Field, Input } from "../components/ui";
