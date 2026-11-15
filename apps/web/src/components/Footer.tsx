@@ -47,8 +47,6 @@ export function Footer() {
               { to: "/documents-guide", label: "راهنمای مدارک" },
               { to: "/articles", label: "مقالات آموزشی" },
               { to: "/faq", label: "سؤالات متداول" },
-              { to: "/privacy", label: "حریم خصوصی" },
-              { to: "/terms", label: "شرایط استفاده" },
             ].map((item) => (
               <li key={item.to}>
                 <Link to={item.to} className="text-slate-400 transition-colors hover:text-white">
@@ -92,7 +90,15 @@ export function Footer() {
       </div>
 
       <div className="border-t border-white/5 py-6 text-center text-[11px] text-slate-300">
-        تمامی حقوق برای مجموعه «صبا ترخیص» محفوظ است. · این سامانه به سامانه‌های رسمی گمرکی متصل نیست.
+        تمامی حقوق برای مجموعه «صبا ترخیص» محفوظ است. · این سامانه به سامانه‌های رسمی گمرکی متصل
+        نیست. ·{" "}
+        <Link to="/privacy" className="transition-colors hover:text-white">
+          حریم خصوصی
+        </Link>{" "}
+        ·{" "}
+        <Link to="/terms" className="transition-colors hover:text-white">
+          شرایط استفاده
+        </Link>
       </div>
     </footer>
   );
