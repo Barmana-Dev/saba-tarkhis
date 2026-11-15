@@ -42,8 +42,8 @@ export function Home() {
           aria-hidden
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(20,184,166,0.22),transparent_45%),radial-gradient(circle_at_80%_0%,rgba(59,130,246,0.18),transparent_40%)]"
         />
-        <div className="relative mx-auto grid max-w-7xl gap-12 px-4 py-16 md:py-24 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:px-8">
-          <div>
+        <div className="relative mx-auto grid max-w-7xl gap-12 px-4 py-16 md:py-24 lg:grid-cols-[1.15fr_0.85fr] lg:items-stretch lg:px-8">
+          <div className="lg:flex lg:flex-col lg:justify-center">
             <h1 className="text-3xl font-bold leading-[1.35] md:text-[2.75rem] md:leading-[1.3]">
               ترخیص کالای شما، با راهنمایی تخصصی و
               <span className="text-accent-500"> پیگیری شفاف</span>
@@ -83,16 +83,25 @@ export function Home() {
             </ul>
           </div>
 
-          <div className="relative">
-            <img
-              src="/images/photos/hero-port.jpg"
-              alt="بندر کانتینری در غروب، جرثقیل‌های در حال بارگیری کشتی"
-              width={1200}
-              height={675}
-              fetchPriority="high"
-              decoding="async"
-              className="w-full rounded-3xl border border-white/10 object-cover shadow-2xl"
-            />
+          <div className="flex flex-col gap-4">
+            <div className="aspect-[3/2] min-h-0 flex-1 overflow-hidden rounded-3xl border border-white/10 bg-brand-950/60 shadow-2xl lg:aspect-auto">
+              <img
+                src="/images/hero-port.svg"
+                alt="تصویرسازی بندر و کشتی کانتینری در حال بارگیری کالا"
+                width={920}
+                height={600}
+                fetchPriority="high"
+                decoding="async"
+                className="h-full w-full object-contain"
+              />
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/5 px-5 py-4 backdrop-blur-sm">
+              <p className="text-xs font-semibold text-white">مسیر پرونده، از سند تا ترخیص</p>
+              <p className="mt-1.5 text-[11px] leading-6 text-slate-300">
+                شناسایی مدارک موردنیاز، ثبت درخواست و پیگیری وضعیت رسیدگی داخلی، در یک جریان مشخص
+                و قابل مشاهده انجام می‌شود.
+              </p>
+            </div>
           </div>
         </div>
       </section>
