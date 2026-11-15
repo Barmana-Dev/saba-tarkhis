@@ -25,28 +25,16 @@ export function About() {
         <span className="text-slate-700">درباره ما</span>
       </nav>
 
-      <div className="grid gap-6 md:grid-cols-[1.6fr_1fr] md:items-center">
-        <header className="max-w-3xl">
-          <p className="text-xs font-semibold text-accent-700">درباره ما</p>
-          <h1 className="mt-2 text-3xl font-bold text-brand-900">
-            صبا ترخیص؛ همراه پرونده‌های گمرکی شما
-          </h1>
-          <p className="mt-4 text-sm leading-8 text-slate-600">
-            {data?.["company.intro"] ??
-              "صبا ترخیص در حوزه ارائه خدمات ترخیص کالا و مشاوره امور گمرکی فعالیت می‌کند. تمرکز ما بر بررسی شفاف اسناد، روشن‌کردن مدارک موردنیاز و پیگیری قابل‌مشاهده پرونده است."}
-          </p>
-        </header>
-
-        <img
-          src="/images/photos/about-review.jpg"
-          alt="دو کارشناس در حال بررسی اسناد یک پرونده روی میز کار"
-          width={1200}
-          height={675}
-          loading="lazy"
-          decoding="async"
-          className="aspect-[16/10] w-full rounded-2xl border border-slate-200 bg-white object-cover shadow-card"
-        />
-      </div>
+      <header className="max-w-3xl">
+        <p className="text-xs font-semibold text-accent-700">درباره ما</p>
+        <h1 className="mt-2 text-3xl font-bold text-brand-900">
+          صبا ترخیص؛ همراه پرونده‌های گمرکی شما
+        </h1>
+        <p className="mt-4 text-sm leading-8 text-slate-600">
+          {data?.["company.intro"] ??
+            "صبا ترخیص در حوزه ارائه خدمات ترخیص کالا و مشاوره امور گمرکی فعالیت می‌کند. تمرکز ما بر بررسی شفاف اسناد، روشن‌کردن مدارک موردنیاز و پیگیری قابل‌مشاهده پرونده است."}
+        </p>
+      </header>
 
       <section className="mt-9 grid gap-5 md:grid-cols-3" aria-labelledby="values">
         <h2 id="values" className="sr-only">شیوه همکاری</h2>
