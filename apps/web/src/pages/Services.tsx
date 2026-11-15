@@ -25,28 +25,16 @@ export function Services() {
         <span className="text-slate-700">خدمات</span>
       </nav>
 
-      <div className="grid gap-6 md:grid-cols-[1.35fr_1fr] md:items-center">
-        <header className="max-w-2xl">
-          <p className="text-xs font-semibold text-accent-700">خدمات صبا ترخیص</p>
-          <h1 className="mt-2 text-3xl font-bold text-brand-900">
-            خدمات ترخیص کالا و مشاوره گمرکی
-          </h1>
-          <p className="mt-3 text-sm leading-7 text-slate-600">
-            هر خدمت با بررسی اولیه پرونده آغاز می‌شود. خدمات نمایش‌داده‌شده، مواردی هستند که توسط
-            کارفرما برای انتشار تأیید شده‌اند.
-          </p>
-        </header>
-
-        <img
-          src="/images/services-logistics.svg"
-          alt="مسیر حمل کالا از بندر تا انبار با کانتینر و کامیون"
-          width={1200}
-          height={700}
-          loading="lazy"
-          decoding="async"
-          className="w-full rounded-2xl border border-slate-200 bg-white shadow-card"
-        />
-      </div>
+      <header className="max-w-2xl">
+        <p className="text-xs font-semibold text-accent-700">خدمات صبا ترخیص</p>
+        <h1 className="mt-2 text-3xl font-bold text-brand-900">
+          خدمات ترخیص کالا و مشاوره گمرکی
+        </h1>
+        <p className="mt-3 text-sm leading-7 text-slate-600">
+          هر خدمت با بررسی اولیه پرونده آغاز می‌شود. خدمات نمایش‌داده‌شده، مواردی هستند که توسط
+          کارفرما برای انتشار تأیید شده‌اند.
+        </p>
+      </header>
 
       <div className="mt-9 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {isPending

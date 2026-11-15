@@ -1,13 +1,6 @@
 import { lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
-import {
-  ArrowLeft,
-  FileSearch,
-  Layers,
-  LockKeyhole,
-  MessageSquareText,
-  PackageSearch,
-} from "lucide-react";
+import { ArrowLeft, FileSearch, Layers, LockKeyhole } from "lucide-react";
 import { Seo } from "../components/Seo";
 import { Skeleton } from "../components/ui";
 import { LazySection } from "../components/Reveal";
@@ -91,57 +84,15 @@ export function Home() {
           </div>
 
           <div className="relative">
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
-              <div className="rounded-2xl bg-white p-5 text-slate-800 shadow-2xl">
-                <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
-                  <div>
-                    <p className="text-[11px] text-slate-500">نمونه پرونده (داده آزمایشی)</p>
-                    <p className="num mt-1 text-sm font-bold text-brand-900">ST-2026-000123</p>
-                  </div>
-                  <span className="shrink-0 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-medium text-amber-800">
-                    در حال بررسی
-                  </span>
-                </div>
-                <ol className="mt-4 space-y-3 text-[11px]">
-                  {[
-                    { label: "ثبت درخواست توسط مشتری", done: true },
-                    { label: "بررسی اسناد و اطلاعات محموله", done: true },
-                    { label: "درخواست مدرک تکمیلی", active: true },
-                    { label: "ثبت پیشنهاد خدمات", done: false },
-                  ].map((step) => (
-                    <li key={step.label} className="flex items-center gap-2.5">
-                      <span
-                        className={`flex size-5 shrink-0 items-center justify-center rounded-full border text-[10px] ${
-                          step.done
-                            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                            : step.active
-                              ? "border-amber-300 bg-amber-50 text-amber-700"
-                              : "border-slate-200 bg-slate-50 text-slate-600"
-                        }`}
-                      >
-                        {step.done ? "✓" : "•"}
-                      </span>
-                      <span className={step.done || step.active ? "text-slate-700" : "text-slate-600"}>
-                        {step.label}
-                      </span>
-                    </li>
-                  ))}
-                </ol>
-                <p className="mt-4 rounded-lg bg-slate-50 px-3 py-2 text-[11px] leading-5 text-slate-500">
-                  این نمایش نمونه است؛ وضعیت‌ها صرفاً رسیدگی داخلی شرکت را نشان می‌دهند.
-                </p>
-              </div>
-            </div>
-            <div className="mt-4 grid grid-cols-2 gap-3 text-[11px] text-slate-200">
-              <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 transition duration-300 hover:bg-white/10">
-                <PackageSearch className="size-4 text-accent-500" aria-hidden />
-                پیگیری مدارک و پیام‌ها
-              </div>
-              <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 transition duration-300 hover:bg-white/10">
-                <MessageSquareText className="size-4 text-accent-500" aria-hidden />
-                ارتباط با کارشناس
-              </div>
-            </div>
+            <img
+              src="/images/photos/hero-port.jpg"
+              alt="بندر کانتینری در غروب، جرثقیل‌های در حال بارگیری کشتی"
+              width={1200}
+              height={675}
+              fetchPriority="high"
+              decoding="async"
+              className="w-full rounded-3xl border border-white/10 object-cover shadow-2xl"
+            />
           </div>
         </div>
       </section>

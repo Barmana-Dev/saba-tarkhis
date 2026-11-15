@@ -4,6 +4,7 @@ import { ArrowLeft, FileCheck2, HelpCircle, ListChecks, UsersRound } from "lucid
 import { api } from "../lib/api";
 import type { Service } from "../lib/types";
 import { Seo } from "../components/Seo";
+import { serviceImage } from "../lib/serviceImages";
 import { Alert, Skeleton } from "../components/ui";
 
 export function ServiceDetail() {
@@ -70,6 +71,17 @@ export function ServiceDetail() {
           <p className="text-xs font-semibold text-accent-700">خدمت</p>
           <h1 className="mt-2 text-3xl font-bold text-brand-900">{data.title}</h1>
           <p className="mt-3 text-sm leading-7 text-slate-600">{data.excerpt}</p>
+
+          <img
+            src={serviceImage(data.slug)}
+            alt=""
+            aria-hidden
+            width={640}
+            height={360}
+            loading="lazy"
+            decoding="async"
+            className="mt-6 w-full rounded-2xl border border-slate-200 bg-brand-50/60 object-cover"
+          />
 
           <div className="prose-fa mt-7 text-sm leading-8 text-slate-700">
             {paragraphs.map((paragraph, index) => (
