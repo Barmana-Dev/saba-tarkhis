@@ -24,10 +24,16 @@ cd apps/api && npm run dev     # http://localhost:4000
 ```bash
 cd apps/web
 npx playwright install chromium        # یک بار؛ اگر مرورگر سیستمی دارید: E2E_CHANNEL=chrome
-E2E_STAFF_PASSWORD="Demo-local-123" npm run test:e2e
+npm run test:e2e                        # رمز پیش‌فرض کارشناس در تست: Demo@12345
 ```
 
-- پیش‌نیازها: دیتابیس بالا با همان `SEED_DEMO_PASSWORD` که به `E2E_STAFF_PASSWORD` می‌دهید.
+- تست‌های مرورگر روی دیتابیس دورریز `saba_tarkhis_test` اجرا می‌شوند، نه دیتابیس توسعه:
+  `e2e/global-setup.ts` پیش از اجرا schema را با `prisma db push` می‌سازد و با
+  `SEED_DEMO_PASSWORD` (پیش‌فرض `Demo@12345`) seed می‌کند؛ پس حساب‌های تستی در دادهٔ کاری
+  ساخته نمی‌شوند.
+- برای استفاده از دیتابیس آماده: `E2E_SKIP_SEED=1` (به‌همراه `E2E_DATABASE_URL` اگر نام دیگری دارد).
+- برای پورت‌های غیرپیش‌فرض: `E2E_API_URL` و `E2E_WEB_URL` را ست کنید (پروکسی Vite خودکار
+  به همان API اشاره می‌کند).
 - پوشه‌ها: `apps/web/e2e` — ۵ سناریو: ثبت‌نام/خروج/ورود مجدد، رد رمز نادرست، ثبت درخواست
   چهارمرحله‌ای با آپلود PDF و دریافت شناسه `ST-…`، الزامی بودن رضایت‌نامه، تغییر وضعیت پرونده
   توسط کارشناس (بدون `E2E_STAFF_PASSWORD` این تست رد می‌شود).
