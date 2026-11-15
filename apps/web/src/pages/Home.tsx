@@ -93,13 +93,13 @@ export function Home() {
           <div className="flex flex-col justify-center gap-4">
             <div className="mx-auto aspect-[16/10] max-h-[240px] w-full max-w-[520px] overflow-hidden rounded-3xl border border-white/10 bg-brand-950/60 shadow-2xl sm:max-h-[270px] lg:mx-0 lg:max-h-none lg:max-w-none">
               <img
-                src="/images/hero-port.svg"
-                alt="تصویرسازی بندر و کشتی کانتینری در حال بارگیری کالا"
-                width={900}
-                height={580}
+                src="/images/photos/hero-port.jpg"
+                alt="بندر کانتینری در غروب، جرثقیل‌های در حال بارگیری کشتی"
+                width={1200}
+                height={675}
                 fetchPriority="high"
                 decoding="async"
-                className="h-full w-full object-cover"
+                className="h-full w-full object-cover object-center"
               />
             </div>
             <div className="grid grid-cols-2 gap-3 text-[11px] text-slate-200">

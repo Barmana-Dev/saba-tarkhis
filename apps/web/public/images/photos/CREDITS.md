@@ -6,7 +6,7 @@
 
 | فایل | عکاس | صفحهٔ اصلی |
 | --- | --- | --- |
-| `hero-port.jpg` (فعلاً استفاده نمی‌شود؛ هدر با تصویرسازی برداری است) | Timelab | https://unsplash.com/photos/yx20mpDyr2I |
+| `hero-port.jpg` (هدر صفحه اول) | Timelab | https://unsplash.com/photos/yx20mpDyr2I |
 | `services-fallback.jpg` | Haris Illahi | https://unsplash.com/photos/ip0yX8W1veE |
 | `services/clearance-from-customs.jpg` | PortCalls Asia | https://unsplash.com/photos/w0U2ckN9wig |
 | `services/customs-document-review.jpg` | Haris Illahi | https://unsplash.com/photos/V89PqZteK-k |
