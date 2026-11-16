@@ -29,24 +29,18 @@ services:
     build:
       context: ./apps/api
       dockerfile: Dockerfile.dev
-    restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
     environment:
-      NODE_ENV: development
+      # Everything else falls back to the defaults in apps/api/src/config/env.ts.
       DATABASE_URL: postgresql://postgres:postgres@db:5432/saba_tarkhis?schema=public
-      PORT: "4000"
-      APP_ORIGIN: http://localhost:3000
-      SESSION_TTL_DAYS: "7"
-      UPLOAD_DIR: ./storage
-      QUARANTINE_DIR: ./storage-quarantine
-      CLAMAV_ENABLED: "false"
+      # Must match the origin the browser uses: it is checked against the
+      # Origin header on state-changing requests and used for session cookies.
+      APP_ORIGIN: http://localhost:${WEB_PORT:-3000}
       SEED_DEMO_PASSWORD: Demo@12345
-      # Only applied when the database has no users yet (see scripts/seed-if-empty.mjs).
-      ENABLE_DEMO_SEED: "true"
     ports:
-      - "4000:4000"
+      - "${API_PORT:-4000}:4000"
     volumes:
       - ./apps/api:/app
       - /app/node_modules
@@ -61,17 +55,16 @@ services:
     build:
       context: ./apps/web
       dockerfile: Dockerfile.dev
-    restart: unless-stopped
     depends_on:
       api:
         condition: service_healthy
     environment:
       # The dev server proxies /api to the API container, so cookies stay
-      # first-party and the browser only ever talks to localhost:3000.
+      # first-party and the browser only ever talks to the published web port.
       API_PROXY_TARGET: http://api:4000
-      APP_ORIGIN: http://localhost:3000
+      APP_ORIGIN: http://localhost:${WEB_PORT:-3000}
     ports:
-      - "3000:3000"
+      - "${WEB_PORT:-3000}:3000"
     volumes:
       - ./apps/web:/app
       - /app/node_modules
