@@ -1,0 +1,21 @@
+# Development image for the API: dependencies (and the generated Prisma
+# client) are baked in, the source is bind-mounted by docker-compose.yml.
+FROM node:24-bookworm-slim
+
+WORKDIR /app
+
+# Prisma's query engine needs OpenSSL, which bookworm-slim does not ship.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends openssl \
+ && rm -rf /var/lib/apt/lists/*
+
+# The postinstall hook runs `prisma generate`, so the schema must be present
+# before `npm ci`.
+COPY package.json package-lock.json ./
+COPY prisma ./prisma
+RUN npm ci
+
+COPY . .
+
+# Apply migrations, seed an empty database once, then start with hot reload.
+CMD ["sh", "-c", "npx prisma migrate deploy && node scripts/seed-if-empty.mjs && npm run dev"]

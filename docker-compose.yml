@@ -1,4 +1,11 @@
-# Local development database only. Credentials here are non-secret demo defaults.
+# Development stack for the whole product: PostgreSQL, the Express API and the
+# Vite dev server that is proxied to the API. One command:
+#
+#   docker compose up -d        # then open http://localhost:3000
+#
+# Source folders are bind-mounted, so edits on the host hot-reload inside both
+# containers. Demo accounts come from the seed (password Demo@12345). For a
+# production deployment use docker-compose.prod.yml instead.
 services:
   db:
     image: postgres:16-alpine
@@ -17,6 +24,57 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/saba_tarkhis?schema=public
+      PORT: "4000"
+      APP_ORIGIN: http://localhost:3000
+      SESSION_TTL_DAYS: "7"
+      UPLOAD_DIR: ./storage
+      QUARANTINE_DIR: ./storage-quarantine
+      CLAMAV_ENABLED: "false"
+      SEED_DEMO_PASSWORD: Demo@12345
+      # Only applied when the database has no users yet (see scripts/seed-if-empty.mjs).
+      ENABLE_DEMO_SEED: "true"
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./apps/api:/app
+      - /app/node_modules
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:4000/api/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      # The dev server proxies /api to the API container, so cookies stay
+      # first-party and the browser only ever talks to localhost:3000.
+      API_PROXY_TARGET: http://api:4000
+      APP_ORIGIN: http://localhost:3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
 
 volumes:
   saba_tarkhis_pgdata:

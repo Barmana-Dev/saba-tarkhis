@@ -1,0 +1,10 @@
+node_modules
+dist
+coverage
+.env
+.env.*
+storage
+storage-quarantine
+storage-test
+storage-quarantine-test
+*.log
