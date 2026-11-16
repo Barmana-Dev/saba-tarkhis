@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { FileText, MessageSquare, PlusCircle, Search } from "lucide-react";
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Bell, CheckCheck, FileText, MessageSquare, PlusCircle, Search } from "lucide-react";
 import { api, queryString } from "../lib/api";
-import type { Paginated, RequestStatus, RequestSummary } from "../lib/types";
+import type { NotificationFeed, Paginated, RequestStatus, RequestSummary } from "../lib/types";
 import { formatDate, requestStatuses, statusMeta, toPersianDigits } from "../lib/format";
 import { useAuth } from "../lib/auth-context";
 import { PanelLayout } from "../components/Layout";
@@ -59,6 +59,19 @@ export function Dashboard() {
     placeholderData: keepPreviousData,
   });
 
+  const queryClient = useQueryClient();
+  const { data: notifications } = useQuery({
+    queryKey: ["notifications"],
+    queryFn: () => api.get<NotificationFeed>("/notifications"),
+    staleTime: 30_000,
+  });
+  const unreadNotifications = notifications?.items.filter((item) => !item.readAt) ?? [];
+
+  async function markAllRead() {
+    await api.post("/notifications/read-all", {});
+    await queryClient.invalidateQueries({ queryKey: ["notifications"] });
+  }
+
   const summary = data?.meta.summary;
   const total = summary ? Object.values(summary).reduce((sum, value) => sum + value, 0) : 0;
 
@@ -78,6 +91,43 @@ export function Dashboard() {
       description="خلاصه پرونده‌ها و وضعیت رسیدگی داخلی درخواست‌های شما."
     >
       <Seo title="پرونده‌های من" description="داشبورد مشتری برای پیگیری درخواست‌های ترخیص." noindex />
+
+      {unreadNotifications.length > 0 ? (
+        <section className="mb-4 rounded-2xl border border-amber-200 bg-amber-50/60 p-4">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="flex items-center gap-2 text-sm font-bold text-brand-900">
+              <Bell className="size-4 text-amber-700" aria-hidden />
+              اعلان‌های خوانده‌نشده
+              <span className="num rounded-full bg-rose-600 px-2 py-0.5 text-[10px] font-bold text-white">
+                {toPersianDigits(unreadNotifications.length)}
+              </span>
+            </h2>
+            <button
+              type="button"
+              onClick={markAllRead}
+              className="flex items-center gap-1 text-[11px] text-brand-700 hover:underline"
+            >
+              <CheckCheck className="size-3.5" aria-hidden />
+              خواندن همه
+            </button>
+          </div>
+          <ul className="mt-3 space-y-2">
+            {unreadNotifications.slice(0, 3).map((item) => (
+              <li key={item.id}>
+                <Link
+                  to={item.requestId ? `/dashboard/requests/${item.requestId}` : "/dashboard"}
+                  className="block rounded-lg border border-amber-100 bg-white px-3 py-2 hover:border-brand-200"
+                >
+                  <span className="block text-xs font-semibold text-slate-800">{item.title}</span>
+                  {item.body ? (
+                    <span className="mt-0.5 line-clamp-1 block text-[11px] text-slate-600">{item.body}</span>
+                  ) : null}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <button

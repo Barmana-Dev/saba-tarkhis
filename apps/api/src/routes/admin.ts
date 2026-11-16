@@ -10,6 +10,7 @@ import { assertTransition, statusLabels } from "../lib/status";
 import { requireAuth, requireRole } from "../middleware/auth";
 import { asyncHandler } from "../middleware/error";
 import { parseOrThrow, validateBody } from "../middleware/validate";
+import { notifyCustomer } from "../lib/notifications";
 import { loadAccessibleRequest, serializeRequestDetail } from "./requests";
 
 export const adminRouter = Router();
@@ -175,6 +176,14 @@ adminRouter.patch(
       return changed;
     });
 
+    await notifyCustomer({
+      userId: row.userId,
+      requestId: row.id,
+      type: "STATUS_CHANGE",
+      title: `پرونده ${row.trackingCode}: ${statusLabels[status]}`,
+      body: reason ?? null,
+    });
+
     return ok(
       res,
       { ...updated, statusLabel: statusLabels[updated.status] },
@@ -282,6 +291,14 @@ adminRouter.patch(
         tx,
       );
       return changed;
+    });
+
+    await notifyCustomer({
+      userId: row.userId,
+      requestId: row.id,
+      type: "QUOTE",
+      title: `پیشنهاد خدمات برای پرونده ${row.trackingCode} ثبت شد`,
+      body: quoteNote.slice(0, 180),
     });
 
     return ok(

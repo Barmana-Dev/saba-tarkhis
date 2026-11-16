@@ -17,6 +17,7 @@ import { errorHandler, notFoundHandler } from "./middleware/error";
 import { adminRouter } from "./routes/admin";
 import { authRouter } from "./routes/auth";
 import { contactRouter, contentRouter } from "./routes/content";
+import { notificationsRouter } from "./routes/notifications";
 import { requestsRouter } from "./routes/requests";
 import { usersRouter } from "./routes/users";
 
@@ -123,6 +124,7 @@ export function createApp() {
   app.use("/api/v1/users", usersRouter);
   app.use("/api/v1/contact", contactRouter);
   app.use("/api/v1/requests", requestsRouter);
+  app.use("/api/v1/notifications", notificationsRouter);
   app.use("/api/v1/admin", adminRouter);
   // Public content lives at /api/v1/services, /articles, /faqs, /settings/public.
   app.use("/api/v1", contentRouter);

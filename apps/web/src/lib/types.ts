@@ -1,5 +1,17 @@
 export type Role = "CUSTOMER" | "EXPERT" | "ADMIN";
 
+export type NotificationItem = {
+  id: string;
+  requestId: string | null;
+  type: "STATUS_CHANGE" | "QUOTE" | "REPLY";
+  title: string;
+  body: string | null;
+  readAt: string | null;
+  createdAt: string;
+};
+
+export type NotificationFeed = { items: NotificationItem[]; unreadCount: number };
+
 export type RequestStatus =
   | "SUBMITTED"
   | "UNDER_REVIEW"

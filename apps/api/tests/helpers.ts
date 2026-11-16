@@ -9,6 +9,7 @@ export const DEMO_PASSWORD = "Demo@12345";
 
 export async function resetDb() {
   await prisma.auditLog.deleteMany();
+  await prisma.notification.deleteMany();
   await prisma.requestStatusHistory.deleteMany();
   await prisma.requestComment.deleteMany();
   await prisma.requestDocument.deleteMany();

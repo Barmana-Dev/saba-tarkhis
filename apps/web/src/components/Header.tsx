@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { LayoutDashboard, LogOut, Menu, User, X } from "lucide-react";
 import { useAuth } from "../lib/auth-context";
+import { NotificationsMenu } from "./NotificationsMenu";
 import { scrollToTop } from "../lib/scroll";
 import { cn } from "../lib/cn";
 
@@ -110,6 +111,7 @@ export function Header() {
         <div className="hidden shrink-0 items-center gap-2 xl:flex">
           {user ? (
             <>
+              {user.role === "CUSTOMER" ? <NotificationsMenu /> : null}
               <Link
                 to={panelLink}
                 className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-medium text-brand-800 hover:bg-brand-50"

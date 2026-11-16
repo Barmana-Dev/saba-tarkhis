@@ -8,6 +8,7 @@ import { api, ApiError, fieldErrorsToMap } from "../lib/api";
 import { requestFormSchema, type RequestFormValues } from "../lib/schemas";
 import { currencyLabels, procedureLabels, transportLabels } from "../lib/format";
 import type { ClearanceRequest } from "../lib/types";
+import { documentsForProcedure, uploadRules } from "../data/requestDocuments";
 import { PanelLayout } from "../components/Layout";
 import { Seo } from "../components/Seo";
 import { Alert, Button, Checkbox, Field, Input, Select, Textarea } from "../components/ui";
@@ -328,9 +329,30 @@ export function RequestNew() {
               <div>
                 <p className="text-sm font-medium text-slate-700">بارگذاری مدارک (اختیاری)</p>
                 <p className="mt-1 text-xs leading-6 text-slate-500">
-                  فایل‌های PDF، JPG یا PNG تا حداکثر ۵ مگابایت برای هر فایل. حداکثر ۴ فایل. مدارک
-                  تکمیلی را می‌توانید بعداً هم در پرونده بارگذاری کنید.
+                  فایل‌های {uploadRules.formats} تا حداکثر {uploadRules.maxSizePerFile} برای هر فایل،
+                  حداکثر {uploadRules.maxFiles} فایل. مدارک تکمیلی را می‌توانید بعداً هم در پرونده
+                  بارگذاری کنید.
                 </p>
+
+                <div className="mt-3 rounded-xl border border-brand-100 bg-brand-50/40 p-4">
+                  <p className="text-xs font-semibold text-brand-900">
+                    مدارک رایج برای رویهٔ {procedureLabels[values.procedureType ?? "UNKNOWN"] ?? "انتخاب‌شده"}
+                  </p>
+                  <ul className="mt-2 grid gap-1.5 text-[11px] leading-5 text-slate-700 sm:grid-cols-2">
+                    {documentsForProcedure(values.procedureType ?? "UNKNOWN").map((hint) => (
+                      <li key={hint.name} className="flex items-start gap-1.5">
+                        <span className="mt-1.5 size-1 shrink-0 rounded-full bg-brand-500" aria-hidden />
+                        <span>
+                          <span className="font-medium text-slate-800">{hint.name}</span>
+                          <span className="text-slate-600"> — {hint.note}</span>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-2 text-[10px] leading-5 text-slate-500">
+                    این فهرست راهنماست؛ مدارک لازم به نوع کالا و مقررات روز بستگی دارد.
+                  </p>
+                </div>
 
                 <div className="mt-3 rounded-xl border border-dashed border-slate-300 bg-slate-50/60 p-4">
                   <input

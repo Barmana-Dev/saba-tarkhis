@@ -21,6 +21,7 @@ import {
   transportLabels,
 } from "../lib/format";
 import { PanelLayout } from "../components/Layout";
+import { caseTimeline, nextStep } from "../lib/caseFlow";
 import { RequestStatusBadge } from "../components/RequestStatusBadge";
 import { Seo } from "../components/Seo";
 import { Alert, Button, Skeleton, Textarea } from "../components/ui";
@@ -194,6 +195,53 @@ export function RequestDetail() {
           </div>
         ) : null}
       </div>
+
+      {(() => {
+        const step = nextStep(data.status, { hasDocuments: data.documents.length > 0 });
+        const timeline = caseTimeline(
+          data.status,
+          data.statusHistory.map((entry) => entry.toStatus),
+        );
+        return (
+          <section className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-card">
+            <h2 className="flex items-center gap-2 text-sm font-bold text-brand-900">
+              <CheckCircle2 className="size-4 text-accent-600" aria-hidden />
+              مسیر پرونده
+            </h2>
+
+            <ol className="mt-4 grid gap-2 sm:grid-cols-5" aria-label="مراحل رسیدگی">
+              {timeline.map((item) => (
+                <li
+                  key={item.status}
+                  className={`rounded-lg border px-2.5 py-2 text-[11px] ${
+                    item.state === "current"
+                      ? "border-brand-300 bg-brand-50 text-brand-900 font-semibold"
+                      : item.state === "done"
+                        ? "border-emerald-100 bg-emerald-50/60 text-emerald-900"
+                        : "border-slate-200 bg-slate-50/60 text-slate-500"
+                  }`}
+                >
+                  {item.label}
+                </li>
+              ))}
+            </ol>
+
+            <div
+              className={`mt-4 rounded-xl border p-4 ${
+                step.needsYourAction
+                  ? "border-amber-200 bg-amber-50/70"
+                  : "border-brand-100 bg-brand-50/50"
+              }`}
+            >
+              <p className="text-xs font-semibold text-brand-900">قدم بعدی: {step.title}</p>
+              <p className="mt-1 text-[12px] leading-6 text-slate-700">{step.detail}</p>
+              <p className="mt-2 text-[11px] text-slate-600">
+                منتظر اقدام: <span className="font-semibold">{step.waitingOn}</span>
+              </p>
+            </div>
+          </section>
+        );
+      })()}
 
       <div className="mt-5 grid gap-5 lg:grid-cols-2">
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-card">

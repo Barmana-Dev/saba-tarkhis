@@ -13,6 +13,7 @@ import {
   type SavedFile,
 } from "../lib/files";
 import { ok, parsePage } from "../lib/http";
+import { notifyCustomer } from "../lib/notifications";
 import { prisma } from "../lib/prisma";
 import { nextTrackingCode } from "../lib/tracking";
 import { buildIranDateRange } from "../lib/dates";
@@ -556,6 +557,18 @@ requestsRouter.post(
       },
       include: { author: { select: { id: true, fullName: true, role: true } } },
     });
+
+    // Staff replies (and public notes) are what the owner needs to see; a
+    // customer's own message must not notify them about themselves.
+    if (user.role !== "CUSTOMER" && visibility === "PUBLIC") {
+      await notifyCustomer({
+        userId: row.userId,
+        requestId: row.id,
+        type: "REPLY",
+        title: `پیام جدید از کارشناس برای پرونده ${row.trackingCode}`,
+        body: payload.body.slice(0, 180),
+      });
+    }
 
     return ok(
       res,

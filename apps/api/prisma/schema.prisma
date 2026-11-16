@@ -94,6 +94,7 @@ model User {
   comments         RequestComment[]
   statusChanges    RequestStatusHistory[]
   auditLogs        AuditLog[]
+  notifications    Notification[]
 
   @@index([role])
 }
@@ -147,6 +148,7 @@ model ClearanceRequest {
   documents      RequestDocument[]
   comments       RequestComment[]
   statusHistory  RequestStatusHistory[]
+  notifications  Notification[]
 
   @@index([userId, status])
   @@index([status, createdAt])
@@ -201,6 +203,25 @@ model RequestStatusHistory {
   changedBy User             @relation(fields: [changedById], references: [id])
 
   @@index([requestId, createdAt])
+}
+
+/// In-panel messages for customers: status changes, new quotes and replies.
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  /// Null for messages that are not tied to one case.
+  requestId String?
+  type      String
+  title     String
+  body      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user    User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  request ClearanceRequest? @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt, createdAt])
+  @@index([requestId])
 }
 
 model Service {

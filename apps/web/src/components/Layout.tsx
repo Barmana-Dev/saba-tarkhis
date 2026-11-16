@@ -5,6 +5,7 @@ import { useAuth } from "../lib/auth-context";
 import { cn } from "../lib/cn";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
+import { NotificationsMenu } from "./NotificationsMenu";
 
 export function PublicLayout({ children }: { children: ReactNode }) {
   return (
@@ -88,10 +89,17 @@ export function PanelLayout({
           </aside>
 
           <div className="min-w-0">
-            <header className="mb-6">
-              <h1 className="text-2xl font-bold text-brand-900">{title}</h1>
-              {description ? (
-                <p className="mt-2 text-sm leading-relaxed text-slate-600">{description}</p>
+            <header className="mb-6 flex items-start justify-between gap-3">
+              <div>
+                <h1 className="text-2xl font-bold text-brand-900">{title}</h1>
+                {description ? (
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{description}</p>
+                ) : null}
+              </div>
+              {user?.role === "CUSTOMER" ? (
+                <div className="shrink-0">
+                  <NotificationsMenu />
+                </div>
               ) : null}
             </header>
             {children}

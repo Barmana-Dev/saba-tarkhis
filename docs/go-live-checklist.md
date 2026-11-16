@@ -69,7 +69,7 @@
 - [x] بررسی‌های خودکار در GitHub Actions (`.github/workflows/ci.yml`): lint و build وب، typecheck
       و تست‌های API با سرویس PostgreSQL، و سناریوهای مرورگر روی دیتابیس `saba_tarkhis_test`.
 - [ ] `docs/manual-qa.md` روی محیط staging با تاریخ و مرورگر اجرا و گزارش شده است.
-- [ ] `npm test` (۳۹ تست API)، `npm run test:e2e` (۵ سناریوی مرورگر)، `npm run typecheck` و
+- [ ] `npm test` (۴۰ تست API)، `npm run test:e2e` (۷ سناریوی مرورگر)، `npm run typecheck` و
       `npm run build` در هر دو اپ سبز هستند.
 - [ ] یک پرونده آزمایشی کامل (ثبت → تخصیص کارشناس → پیشنهاد → تکمیل) روی staging انجام شده و
       مدرک آن دانلود شده است.
