@@ -466,12 +466,16 @@ export function RequestNew() {
             </Button>
 
             {step < steps.length - 1 ? (
-              <Button type="button" onClick={goNext}>
+              // The keys matter: without them React reuses this DOM node for the
+              // submit button of the review step, so the click that opened the
+              // review (`type="button"`) gets its submit activation behaviour
+              // and files the request before the user confirms it.
+              <Button key="next-step" type="button" onClick={goNext}>
                 مرحله بعد
                 <ArrowLeft className="size-4" aria-hidden />
               </Button>
             ) : (
-              <Button type="submit" loading={mutation.isPending}>
+              <Button key="submit-request" type="submit" loading={mutation.isPending}>
                 <Check className="size-4" aria-hidden />
                 ثبت نهایی درخواست
               </Button>

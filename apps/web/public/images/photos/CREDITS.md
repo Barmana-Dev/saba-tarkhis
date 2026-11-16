@@ -1,18 +1,22 @@
 # Photo credits
 
-همهٔ عکس‌های این پوشه از Unsplash و تحت [Unsplash License](https://unsplash.com/license) هستند:
-استفادهٔ تجاری آزاد، بدون نیاز به اجازه، و ذکر عکس‌بند اختیاری ولی قدردانی‌شده است.
-فایل‌ها با پارامترهای CDN آنسپلش (عرض ۱۲۰۰px، برش ۱۶:۹، JPEG کیفیت ۷۶) دانلود شده‌اند.
+عکس‌های این پوشه از دو منبع آزاد آمده‌اند و پیش از استفاده، مجوز هر کدام بررسی شده است:
 
-| فایل | عکاس | صفحهٔ اصلی |
-| --- | --- | --- |
-| `hero-port.jpg` (هدر صفحه اول) | Timelab | https://unsplash.com/photos/yx20mpDyr2I |
-| `services-fallback.jpg` | Haris Illahi | https://unsplash.com/photos/ip0yX8W1veE |
-| `services/clearance-from-customs.jpg` | PortCalls Asia | https://unsplash.com/photos/w0U2ckN9wig |
-| `services/customs-document-review.jpg` | Haris Illahi | https://unsplash.com/photos/V89PqZteK-k |
-| `services/order-registration-guidance.jpg` | SumUp | https://unsplash.com/photos/YDe0nOZyLHI |
-| `services/import-export-guidance.jpg` | Daniel Miksha | https://unsplash.com/photos/4ZornyPnGlA |
-| `services/hs-code-review.jpg` | Karori Production | https://unsplash.com/photos/cpwP43LnGRk |
-| `services/transit-process-guidance.jpg` | Preston A Larimer | https://unsplash.com/photos/VlAHPXYF9ok |
+- **Unsplash** ([Unsplash License](https://unsplash.com/license)): استفادهٔ تجاری آزاد، بدون نیاز به اجازه،
+  ذکر عکس‌بند اختیاری ولی قدردانی‌شده. فایل‌ها با پارامترهای CDN آنسپلش (برش ۸:۵، JPEG کیفیت ۸۰) دانلود شده‌اند.
+- **Wikimedia Commons**: مجوز هر عکس در جدول آمده است؛ برای عکس‌های CC BY / CC BY-SA ذکر نام عکاس و
+  مجوز الزامی است و همین‌جا انجام شده.
 
-اگر عکسی جایگزین شد، همین جدول را به‌روز کنید. فایل‌های SVG قبلی (تصویرسازی) حذف شده‌اند.
+| فایل | منبع | عکاس | مجوز | صفحهٔ اصلی |
+| --- | --- | --- | --- | --- |
+| `hero-port.jpg` (هدر صفحه اول) | Wikimedia Commons | Hannes Grobe | CC BY-SA 2.5 | https://commons.wikimedia.org/wiki/File:Container-terminal_bremerhaven_hg.jpg |
+| `services-fallback.jpg` | Unsplash | Haris Illahi | Unsplash License | https://unsplash.com/photos/ip0yX8W1veE |
+| `services/clearance-from-customs.jpg` | Unsplash | PortCalls Asia | Unsplash License | https://unsplash.com/photos/w0U2ckN9wig |
+| `services/customs-document-review.jpg` | Unsplash | Helloquence | Unsplash License | شناسهٔ عکس: `photo-1450101499163-c8848c66ca85` |
+| `services/order-registration-guidance.jpg` | Unsplash | — | Unsplash License | شناسهٔ عکس: `photo-1454165804606-c3d57bc86b40` |
+| `services/import-export-guidance.jpg` | Unsplash | Daniel Miksha | Unsplash License | https://unsplash.com/photos/4ZornyPnGlA |
+| `services/hs-code-review.jpg` | Unsplash | — | Unsplash License | شناسهٔ عکس: `photo-1586528116311-ad8dd3c8310d` |
+| `services/transit-process-guidance.jpg` | Unsplash | Preston A Larimer | Unsplash License | https://unsplash.com/photos/VlAHPXYF9ok |
+
+عکس‌های خدمات با موضوع همان خدمت هماهنگ انتخاب شده‌اند و از تصویرهایی که متن خارجیِ ناخوانا یا
+چهرهٔ مشتری در آن‌ها دیده می‌شد پرهیز شده است. اگر عکسی جایگزین شد، همین جدول را به‌روز کنید.

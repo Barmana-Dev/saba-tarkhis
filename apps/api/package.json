@@ -19,9 +19,6 @@
     "scan:verify": "node scripts/verify-clamav.mjs",
     "postinstall": "prisma generate"
   },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
-  },
   "dependencies": {
     "@prisma/client": "^6.19.0",
     "bcryptjs": "^3.0.2",

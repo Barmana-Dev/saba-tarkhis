@@ -95,8 +95,8 @@ export function Home() {
               <img
                 src="/images/photos/hero-port.jpg"
                 alt="بندر کانتینری در غروب، جرثقیل‌های در حال بارگیری کشتی"
-                width={1200}
-                height={675}
+                width={1600}
+                height={1000}
                 fetchPriority="high"
                 decoding="async"
                 className="h-full w-full object-cover object-center"

@@ -25,12 +25,19 @@ test("customer files a request with a document and sees the tracking code", asyn
   await page.locator("#privacyAccepted").check();
   await page.getByRole("button", { name: "مرحله بعد" }).click();
 
-  // Step 4 — review and submit. The SPA navigates as soon as the upload
-  // resolves, so the native click is used to avoid a detached-element retry.
+  // Step 4 — review and submit. The button is asserted visible and enabled, then
+  // clicked for real through the input pipeline; `force` is only there because
+  // the submit disables the button while the upload is in flight, which would
+  // otherwise keep Playwright waiting on an element that is no longer enabled.
   await expect(page.getByText("قطعات یدکی صنعتی برای تست مرورگر")).toBeVisible();
-  await page
-    .getByRole("button", { name: "ثبت نهایی درخواست" })
-    .evaluate((button: HTMLButtonElement) => button.click());
+  const submit = page.getByRole("button", { name: "ثبت نهایی درخواست" });
+  await expect(submit).toBeVisible();
+  await expect(submit).toBeEnabled();
+
+  // A real click on a real button: Playwright checks that it is visible and
+  // enabled, dispatches the click and then the assertion below waits for the
+  // page the submission navigates to.
+  await submit.click();
 
   await expect(page).toHaveURL(/\/dashboard\/requests\/[\w-]+/, { timeout: 30_000 });
   await expect(page.getByText(/ST-\d{4}-\d{6}/).first()).toBeVisible();
