@@ -28,9 +28,11 @@ export function caseTimeline(status: RequestStatus, reached: RequestStatus[]): C
     // The quote step is skipped for cases that never received one.
     if (step.status === "QUOTED" && !seen.has("QUOTED")) return [];
     if (step.status === status) return [{ ...step, state: "current" }];
-    // A cancelled case has no current step, so it shows what it actually reached.
-    const isDone = currentIndex === -1 ? seen.has(step.status) : index < currentIndex;
-    return [{ ...step, state: isDone ? "done" : "upcoming" }];
+    // A cancelled case has no current step: show only what it passed through.
+    if (currentIndex === -1) {
+      return seen.has(step.status) ? [{ ...step, state: "done" }] : [];
+    }
+    return [{ ...step, state: index < currentIndex ? "done" : "upcoming" }];
   });
 }
 
