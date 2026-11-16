@@ -21,20 +21,17 @@ export type CaseStep = {
  * is not shown as if it had passed through it.
  */
 export function caseTimeline(status: RequestStatus, reached: RequestStatus[]): CaseStep[] {
-  const reachedSet = new Set<RequestStatus>([...reached, status]);
+  const seen = new Set<RequestStatus>([...reached, status]);
   const currentIndex = baseSteps.findIndex((step) => step.status === status);
 
-  return baseSteps
-    .filter((step) => reachedSet.has(step.status) || step.status !== "QUOTED")
-    .map((step) => {
-      const index = baseSteps.findIndex((item) => item.status === step.status);
-      if (step.status === status) return { ...step, state: "current" as const };
-      if (currentIndex === -1) {
-        // Cancelled cases keep whatever they had already passed through.
-        return { ...step, state: reachedSet.has(step.status) ? ("done" as const) : ("upcoming" as const) };
-      }
-      return { ...step, state: index < currentIndex ? ("done" as const) : ("upcoming" as const) };
-    });
+  return baseSteps.flatMap<CaseStep>((step, index) => {
+    // The quote step is skipped for cases that never received one.
+    if (step.status === "QUOTED" && !seen.has("QUOTED")) return [];
+    if (step.status === status) return [{ ...step, state: "current" }];
+    // A cancelled case has no current step, so it shows what it actually reached.
+    const isDone = currentIndex === -1 ? seen.has(step.status) : index < currentIndex;
+    return [{ ...step, state: isDone ? "done" : "upcoming" }];
+  });
 }
 
 export type NextStep = {

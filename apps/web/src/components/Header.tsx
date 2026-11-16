@@ -22,6 +22,8 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  // Panel pages render their own notification bell next to the page title.
+  const inPanel = location.pathname.startsWith("/dashboard") || location.pathname.startsWith("/admin");
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -111,7 +113,7 @@ export function Header() {
         <div className="hidden shrink-0 items-center gap-2 xl:flex">
           {user ? (
             <>
-              {user.role === "CUSTOMER" ? <NotificationsMenu /> : null}
+              {user.role === "CUSTOMER" && !inPanel ? <NotificationsMenu /> : null}
               <Link
                 to={panelLink}
                 className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-medium text-brand-800 hover:bg-brand-50"
