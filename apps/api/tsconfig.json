@@ -2,8 +2,10 @@
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["ES2022"],
-    "module": "commonjs",
-    "moduleResolution": "node",
+    // The package has no "type": "module", so NodeNext still emits CommonJS.
+    // "node" (node10) resolution is removed in TypeScript 7.
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "rootDir": "src",
     "outDir": "dist",
     "strict": true,
