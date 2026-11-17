@@ -1,6 +1,6 @@
 import { useCallback, useMemo, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "./api";
+import { api, setCsrfToken } from "./api";
 import { AuthContext, type AuthValue } from "./auth-context";
 import type { CurrentUser } from "./types";
 
@@ -23,7 +23,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(
     async (mobile: string, password: string) => {
-      const result = await api.post<{ user: CurrentUser }>("/auth/login", { mobile, password });
+      const result = await api.post<{ user: CurrentUser; csrfToken?: string }>("/auth/login", {
+        mobile,
+        password,
+      });
+      if (result.csrfToken) setCsrfToken(result.csrfToken);
       queryClient.setQueryData(["me"], result.user);
       return result.user;
     },
@@ -32,7 +36,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = useCallback(
     async (input: { fullName: string; mobile: string; email?: string; password: string }) => {
-      const result = await api.post<{ user: CurrentUser }>("/auth/register", input);
+      const result = await api.post<{ user: CurrentUser; csrfToken?: string }>(
+        "/auth/register",
+        input,
+      );
+      if (result.csrfToken) setCsrfToken(result.csrfToken);
       queryClient.setQueryData(["me"], result.user);
       return result.user;
     },
@@ -41,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     await api.post("/auth/logout");
+    setCsrfToken(null);
     queryClient.setQueryData(["me"], null);
     queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== "me" });
   }, [queryClient]);

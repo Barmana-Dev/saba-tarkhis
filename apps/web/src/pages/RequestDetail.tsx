@@ -108,7 +108,7 @@ export function RequestDetail() {
 
   const facts: [string, string][] = [
     ["نوع متقاضی", data.applicantType === "COMPANY" ? "شخص حقوقی / شرکت" : "شخص حقیقی"],
-    ["نام متقاضی", data.applicantName || "—"],
+    ["نام متقاضی", data.applicantName || data.customer?.fullName || "—"],
     ["رویه", procedureLabels[data.procedureType] ?? data.procedureType],
     ["روش حمل", transportLabels[data.transportMode] ?? data.transportMode],
     ["کشور مبدأ", data.originCountry || "—"],
@@ -303,6 +303,7 @@ export function RequestDetail() {
               accept=".pdf,.png,.jpg,.jpeg"
               className="sr-only"
               id="supplementary-file"
+              aria-label="انتخاب فایل مدرک تکمیلی"
               onChange={(event) => handleFile(event.target.files?.[0])}
             />
             <Button

@@ -31,7 +31,12 @@ export function setAuthCookies(
     maxAge: ttlMs,
   });
   // Readable by the SPA so it can send the double-submit CSRF header.
-  res.cookie(CSRF_COOKIE, tokens.csrf, {
+  setCsrfCookie(res, tokens.csrf, ttlMs);
+}
+
+/** Writes the readable CSRF cookie (the session cookie stays HttpOnly). */
+export function setCsrfCookie(res: Response, token: string, ttlMs: number = env.sessionTtlMs) {
+  res.cookie(CSRF_COOKIE, token, {
     httpOnly: false,
     secure: env.cookieSecure,
     sameSite: "lax",

@@ -137,7 +137,7 @@ export function Dashboard() {
             status === "" ? "border-brand-300 bg-brand-50" : "border-slate-200 bg-white hover:border-brand-200"
           }`}
         >
-          <p className="text-xs text-slate-500">همه پرونده‌ها</p>
+          <p className="text-xs text-slate-600">همه پرونده‌ها</p>
           <p className="num mt-2 text-2xl font-bold text-brand-900">{toPersianDigits(total)}</p>
         </button>
         {highlightStatuses.map((item) => (
@@ -149,7 +149,7 @@ export function Dashboard() {
               status === item ? "border-brand-300 bg-brand-50" : "border-slate-200 bg-white hover:border-brand-200"
             }`}
           >
-            <p className="text-xs text-slate-500">{statusMeta[item].label}</p>
+            <p className="text-xs text-slate-600">{statusMeta[item].label}</p>
             <p className="num mt-2 text-2xl font-bold text-brand-900">
               {toPersianDigits(summary?.[item] ?? 0)}
             </p>

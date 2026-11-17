@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, CheckCheck } from "lucide-react";
@@ -14,6 +14,8 @@ import type { NotificationFeed, NotificationItem } from "../lib/types";
 export function NotificationsMenu() {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -23,6 +25,15 @@ export function NotificationsMenu() {
     refetchInterval: 60_000,
     staleTime: 30_000,
   });
+
+  // A `menu` must be operable from the keyboard: opening moves focus into the
+  // list, Escape closes it and returns focus to the trigger.
+  useEffect(() => {
+    if (!open) return;
+    menuRef.current
+      ?.querySelector<HTMLElement>('[role="menuitem"]')
+      ?.focus({ preventScroll: true });
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -35,6 +46,31 @@ export function NotificationsMenu() {
     return () => document.removeEventListener("mousedown", onPointerDown);
   }, [open]);
 
+  function closeMenu(focusButton: boolean) {
+    setOpen(false);
+    if (focusButton) buttonRef.current?.focus({ preventScroll: true });
+  }
+
+  function handleKeyDown(event: KeyboardEvent) {
+    if (event.key === "Escape") {
+      event.stopPropagation();
+      closeMenu(true);
+      return;
+    }
+    if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+    const items = [
+      ...(menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []),
+    ];
+    if (items.length === 0) return;
+    event.preventDefault();
+    const current = items.indexOf(document.activeElement as HTMLElement);
+    const next =
+      event.key === "ArrowDown"
+        ? (current + 1) % items.length
+        : (current - 1 + items.length) % items.length;
+    items[next].focus({ preventScroll: true });
+  }
+
   const unread = data?.unreadCount ?? 0;
   const items = data?.items ?? [];
 
@@ -44,7 +80,7 @@ export function NotificationsMenu() {
   }
 
   async function openItem(item: NotificationItem) {
-    setOpen(false);
+    closeMenu(false);
     if (!item.readAt) {
       await api.post(`/notifications/${item.id}/read`, {}).catch(() => undefined);
       await queryClient.invalidateQueries({ queryKey: ["notifications"] });
@@ -53,8 +89,9 @@ export function NotificationsMenu() {
   }
 
   return (
-    <div ref={containerRef} className="relative">
+    <div ref={containerRef} className="relative" onKeyDown={handleKeyDown}>
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => setOpen((value) => !value)}
         className="relative flex items-center gap-1.5 rounded-lg px-3 py-2 text-[13px] font-medium text-slate-600 hover:bg-slate-50 hover:text-brand-800"
@@ -73,7 +110,9 @@ export function NotificationsMenu() {
 
       {open ? (
         <div
+          ref={menuRef}
           role="menu"
+          aria-label="اعلان‌های من"
           className="absolute end-0 z-50 mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl"
         >
           <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2">

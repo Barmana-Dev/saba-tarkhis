@@ -27,7 +27,15 @@ export const requestsRouter = Router();
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: env.maxUploadBytes, files: 4 },
+  limits: {
+    fileSize: env.maxUploadBytes,
+    files: 4,
+    // Multipart text fields bypass express.json's limit, so they are capped
+    // here too: the JSON payload needs a few kilobytes, not megabytes.
+    fields: 20,
+    parts: 40,
+    fieldSize: 32 * 1024,
+  },
 });
 
 // Limits are keyed by the authenticated user, never by a client-supplied value.
@@ -106,7 +114,7 @@ async function persistDocument(input: {
       );
     }
 
-    return tx.requestDocument.create({
+    const document = await tx.requestDocument.create({
       data: {
         requestId: input.requestId,
         uploadedById: input.uploadedById,
@@ -119,6 +127,12 @@ async function persistDocument(input: {
         scannedAt: input.file.scannedAt,
       },
     });
+    // A new document is case activity, so the case row must show it.
+    await tx.clearanceRequest.update({
+      where: { id: input.requestId },
+      data: { updatedAt: new Date() },
+    });
+    return document;
   });
 }
 
@@ -299,7 +313,8 @@ requestsRouter.post(
               trackingCode,
               userId: user.id,
               applicantType: payload.applicantType,
-              applicantName: payload.applicantName ?? null,
+              // The form promises the account name when the field is left empty.
+              applicantName: payload.applicantName ?? user.fullName,
               preferredContact: payload.preferredContact,
               goodsDescription: payload.goodsDescription,
               category: payload.category ?? null,
@@ -435,7 +450,13 @@ requestsRouter.get(
           status: true,
           createdAt: true,
           updatedAt: true,
-          _count: { select: { documents: true, comments: true } },
+          _count: {
+            select: {
+              documents: true,
+              // Customers must not count internal notes they cannot see.
+              comments: user.role === "CUSTOMER" ? { where: { visibility: "PUBLIC" } } : true,
+            },
+          },
         },
       }),
       prisma.clearanceRequest.count({ where }),
@@ -556,6 +577,13 @@ requestsRouter.post(
         visibility,
       },
       include: { author: { select: { id: true, fullName: true, role: true } } },
+    });
+
+    // @updatedAt only tracks the request row itself, so new activity in a related
+    // table must touch it for "آخرین بروزرسانی" to stay truthful.
+    await prisma.clearanceRequest.update({
+      where: { id: row.id },
+      data: { updatedAt: new Date() },
     });
 
     // Staff replies (and public notes) are what the owner needs to see; a

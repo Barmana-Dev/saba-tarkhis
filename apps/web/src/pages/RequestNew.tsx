@@ -9,6 +9,7 @@ import { requestFormSchema, type RequestFormValues } from "../lib/schemas";
 import { currencyLabels, procedureLabels, transportLabels } from "../lib/format";
 import type { ClearanceRequest } from "../lib/types";
 import { documentsForProcedure, uploadRules } from "../data/requestDocuments";
+import { useAuth } from "../lib/auth-context";
 import { PanelLayout } from "../components/Layout";
 import { Seo } from "../components/Seo";
 import { Alert, Button, Checkbox, Field, Input, Select, Textarea } from "../components/ui";
@@ -46,6 +47,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_FILES = 4;
 
 export function RequestNew() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [files, setFiles] = useState<File[]>([]);
@@ -437,7 +439,8 @@ export function RequestNew() {
               <dl className="grid gap-4 rounded-xl border border-slate-200 bg-slate-50/50 p-4 text-sm sm:grid-cols-2">
                 {[
                   ["نوع متقاضی", values.applicantType === "COMPANY" ? "شخص حقوقی / شرکت" : "شخص حقیقی"],
-                  ["نام متقاضی", values.applicantName || "—"],
+                  // Matches what the server stores when the field is left empty.
+                  ["نام متقاضی", values.applicantName || user?.fullName || "—"],
                   ["شرح کالا", values.goodsDescription],
                   ["دسته کالا", values.category || "—"],
                   ["کد تعرفه", values.hsCode || "—"],

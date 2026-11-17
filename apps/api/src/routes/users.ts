@@ -10,8 +10,14 @@ import { validateBody } from "../middleware/validate";
 
 export const usersRouter = Router();
 
+// Every field is optional so a PATCH only touches what the client sent.
 const updateMeSchema = z.object({
-  fullName: z.string().trim().min(3, "نام و نام خانوادگی را کامل وارد کنید.").max(120),
+  fullName: z
+    .string()
+    .trim()
+    .min(3, "نام و نام خانوادگی را کامل وارد کنید.")
+    .max(120)
+    .optional(),
   email: z.union([emailSchema, z.literal("")]).optional(),
 });
 
@@ -32,9 +38,14 @@ usersRouter.patch(
       }
     }
 
+    // A missing email means "leave it alone"; an empty string clears it.
+    const changes: { fullName?: string; email?: string | null } = {};
+    if (fullName !== undefined) changes.fullName = fullName;
+    if (email !== undefined) changes.email = email ? email : null;
+
     const user = await prisma.user.update({
       where: { id: req.user!.id },
-      data: { fullName, email: email ? email : null },
+      data: changes,
     });
 
     return ok(

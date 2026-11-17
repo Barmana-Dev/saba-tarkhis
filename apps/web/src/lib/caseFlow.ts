@@ -25,14 +25,18 @@ export function caseTimeline(status: RequestStatus, reached: RequestStatus[]): C
   const currentIndex = baseSteps.findIndex((step) => step.status === status);
 
   return baseSteps.flatMap<CaseStep>((step, index) => {
+    const isReached = seen.has(step.status);
     // The quote step is skipped for cases that never received one.
-    if (step.status === "QUOTED" && !seen.has("QUOTED")) return [];
+    if (step.status === "QUOTED" && !isReached) return [];
     if (step.status === status) return [{ ...step, state: "current" }];
     // A cancelled case has no current step: show only what it passed through.
     if (currentIndex === -1) {
-      return seen.has(step.status) ? [{ ...step, state: "done" }] : [];
+      return isReached ? [{ ...step, state: "done" }] : [];
     }
-    return [{ ...step, state: index < currentIndex ? "done" : "upcoming" }];
+    if (index > currentIndex) return [{ ...step, state: "upcoming" }];
+    // A step behind the current one still only counts when the server recorded
+    // it; the workflow allows jumps such as SUBMITTED → QUOTED.
+    return [{ ...step, state: isReached ? "done" : "upcoming" }];
   });
 }
 

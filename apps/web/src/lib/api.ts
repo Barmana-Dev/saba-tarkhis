@@ -33,22 +33,47 @@ function readCookie(name: string): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
+// The CSRF cookie is readable only on the API host. When the SPA runs on another
+// host the token comes from the login response (or /auth/csrf) and is kept here.
+let csrfToken: string | null = null;
+
+export function setCsrfToken(token: string | null) {
+  csrfToken = token;
+}
+
+async function fetchCsrfToken(): Promise<string | null> {
+  try {
+    const response = await fetch(`${API_BASE}/auth/csrf`, {
+      credentials: "include",
+      headers: { Accept: "application/json" },
+    });
+    if (!response.ok) return null;
+    const payload = (await response.json()) as { data?: { csrfToken?: string } };
+    const token = payload.data?.csrfToken ?? null;
+    if (token) csrfToken = token;
+    return token;
+  } catch {
+    return null;
+  }
+}
+
 type RequestOptions = {
   method?: "GET" | "POST" | "PATCH" | "DELETE";
   body?: unknown;
   formData?: FormData;
 };
 
-async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+async function request<T>(path: string, options: RequestOptions = {}, retryCsrf = true): Promise<T> {
   const method = options.method ?? "GET";
   const headers: Record<string, string> = { Accept: "application/json" };
+  const mutating = !["GET", "HEAD"].includes(method);
 
   if (options.body !== undefined) {
     headers["Content-Type"] = "application/json";
   }
 
-  if (!["GET", "HEAD"].includes(method)) {
-    const csrf = readCookie("st_csrf");
+  if (mutating) {
+    const csrf = readCookie("st_csrf") ?? csrfToken;
     if (csrf) headers["X-CSRF-Token"] = csrf;
   }
 
@@ -82,6 +107,13 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
       payload = JSON.parse(text);
     } catch {
       payload = null;
+    }
+  }
+
+  if (response.status === 403 && payload?.code === "CSRF_FAILED" && mutating && retryCsrf) {
+    // Token rotated or unreadable (separate API host): fetch a fresh one once.
+    if (await fetchCsrfToken()) {
+      return request<T>(path, options, false);
     }
   }
 

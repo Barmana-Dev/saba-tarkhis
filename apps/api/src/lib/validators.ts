@@ -33,6 +33,11 @@ export const passwordSchema = z
   .string()
   .min(8, "رمز عبور باید حداقل ۸ کاراکتر باشد.")
   .max(72, "رمز عبور بیش از حد طولانی است.")
+  // bcrypt only uses the first 72 bytes, so a longer UTF-8 password (Persian
+  // letters take two bytes each) would silently accept a different tail.
+  .refine((value) => Buffer.byteLength(value, "utf8") <= 72, {
+    message: "رمز عبور بیش از حد طولانی است (حداکثر ۷۲ بایت؛ هر حرف فارسی ۲ بایت است).",
+  })
   .refine((value) => /[A-Za-z]/.test(value) && /\d/.test(value), {
     message: "رمز عبور باید شامل حرف و عدد باشد.",
   });

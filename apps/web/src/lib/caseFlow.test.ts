@@ -25,6 +25,17 @@ describe("caseTimeline", () => {
     ]);
   });
 
+  it("does not mark a step the workflow skipped", () => {
+    // SUBMITTED → QUOTED is allowed, so UNDER_REVIEW never happened.
+    expect(summarize("QUOTED", ["SUBMITTED", "QUOTED"])).toEqual([
+      "SUBMITTED:done",
+      "UNDER_REVIEW:upcoming",
+      "QUOTED:current",
+      "IN_PROGRESS:upcoming",
+      "COMPLETED:upcoming",
+    ]);
+  });
+
   it("shows only the steps a cancelled case reached, with none marked current", () => {
     expect(summarize("CANCELLED", ["SUBMITTED", "UNDER_REVIEW", "NEED_MORE_INFO", "CANCELLED"])).toEqual([
       "SUBMITTED:done",

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Mail, MapPin, Phone, Send } from "lucide-react";
+import { AtSign, Clock, Mail, MapPin, Phone, Send } from "lucide-react";
 import { api, ApiError } from "../lib/api";
 import { contactSchema } from "../lib/schemas";
 import type { z } from "zod";
@@ -42,6 +42,8 @@ export function Contact() {
     { icon: Phone, label: "تلفن", value: settings.data?.["contact.phone"] },
     { icon: Mail, label: "ایمیل", value: settings.data?.["contact.email"] },
     { icon: MapPin, label: "نشانی", value: settings.data?.["contact.address"] },
+    { icon: Clock, label: "ساعات پاسخگویی", value: settings.data?.["contact.hours"] },
+    { icon: AtSign, label: "اینستاگرام", value: settings.data?.["contact.instagram"] },
   ];
 
   return (
@@ -152,14 +154,25 @@ export function Contact() {
                   <li key={item.label} className="flex items-start gap-2.5">
                     <Icon className="lead-icon size-4 shrink-0 text-accent-600" aria-hidden />
                     <div>
-                      <p className="text-xs text-slate-500">{item.label}</p>
-                      <p
-                        className={`mt-0.5 text-sm text-slate-700 ${
-                          item.label === "ایمیل" ? "break-all" : "break-words"
-                        }`}
-                      >
-                        {item.value ?? "نیازمند تأیید کارفرما"}
-                      </p>
+                      <p className="text-xs text-slate-600">{item.label}</p>
+                      {item.label === "اینستاگرام" && item.value && /^https?:\/\//.test(item.value) ? (
+                        <a
+                          href={item.value}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-0.5 block break-all text-sm text-brand-700 hover:underline"
+                        >
+                          {item.value}
+                        </a>
+                      ) : (
+                        <p
+                          className={`mt-0.5 text-sm text-slate-700 ${
+                            item.label === "ایمیل" ? "break-all" : "break-words"
+                          }`}
+                        >
+                          {item.value ?? "نیازمند تأیید کارفرما"}
+                        </p>
+                      )}
                     </div>
                   </li>
                 );

@@ -59,10 +59,10 @@ export const env = {
   ...raw,
   isProduction: raw.NODE_ENV === "production",
   isTest: raw.NODE_ENV === "test",
-  // Secure cookies are mandatory in production, optional (and off) elsewhere.
-  cookieSecure: raw.COOKIE_SECURE
-    ? raw.COOKIE_SECURE === "true"
-    : raw.NODE_ENV === "production",
+  // Secure cookies are mandatory in production: the env flag can relax them only
+  // outside production, never inside it.
+  cookieSecure:
+    raw.NODE_ENV === "production" ? true : raw.COOKIE_SECURE === "true",
   rateLimitEnabled: raw.DISABLE_RATE_LIMIT !== "true",
   clamavEnabled: raw.CLAMAV_ENABLED === "true",
   clamscanPath: raw.CLAMSCAN_PATH,

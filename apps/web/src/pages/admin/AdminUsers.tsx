@@ -169,7 +169,7 @@ export function AdminUsers() {
         </div>
       ) : null}
 
-      <p className="mt-4 text-[11px] leading-5 text-slate-500">
+      <p className="mt-4 text-[11px] leading-5 text-slate-600">
         تغییر نقش و وضعیت کاربران در گزارش ممیزی ثبت می‌شود. امکان غیرفعال‌سازی یا تغییر نقش حساب
         خودتان وجود ندارد.
       </p>

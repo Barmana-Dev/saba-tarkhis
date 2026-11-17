@@ -14,6 +14,7 @@ import {
   clearAuthCookies,
   requireAuth,
   setAuthCookies,
+  setCsrfCookie,
   sha256,
 } from "../middleware/auth";
 import { asyncHandler } from "../middleware/error";
@@ -191,6 +192,26 @@ authRouter.get(
     }
 
     return ok(res, { user: publicUser(user) });
+  }),
+);
+
+/**
+ * Issues a fresh CSRF token for the current session. The browser can read the
+ * CSRF cookie only on the API host, so a SPA served from another host asks for
+ * the token here instead of reading `document.cookie`.
+ */
+authRouter.get(
+  "/csrf",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const csrfToken = randomBytes(24).toString("base64url");
+    await prisma.session.update({
+      where: { id: req.authSession!.id },
+      data: { csrfHash: sha256(csrfToken) },
+    });
+    setCsrfCookie(res, csrfToken);
+    res.setHeader("Cache-Control", "private, no-store");
+    return ok(res, { csrfToken });
   }),
 );
 

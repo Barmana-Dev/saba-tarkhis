@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { LayoutDashboard, LogOut, Menu, User, X } from "lucide-react";
+import { api } from "../lib/api";
 import { useAuth } from "../lib/auth-context";
 import { NotificationsMenu } from "./NotificationsMenu";
 import { scrollToTop } from "../lib/scroll";
@@ -20,6 +22,14 @@ export function Header() {
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [logoutError, setLogoutError] = useState<string | null>(null);
+
+  const settings = useQuery({
+    queryKey: ["public-settings"],
+    queryFn: () => api.get<Record<string, string>>("/settings/public"),
+    staleTime: 10 * 60 * 1000,
+  });
+  const tagline = settings.data?.["company.tagline"] || "خدمات تخصصی ترخیص کالا";
   const location = useLocation();
   const navigate = useNavigate();
   // Panel pages render their own notification bell next to the page title.
@@ -33,14 +43,17 @@ export function Header() {
   }, []);
 
   async function handleLogout() {
-    // Leave the protected area first: clearing `user` while still on a panel
-    // makes ProtectedRoute redirect to /login?next=/dashboard, which then
-    // hijacks the next (admin) login.
+    setLogoutError(null);
+    // Leave the panel before the local user is cleared, otherwise ProtectedRoute
+    // redirects to /login?next=/dashboard and hijacks the next login. The user is
+    // only cleared when the server confirms, so a failed request leaves a valid
+    // session intact and reports the failure instead of hiding it.
+    setOpen(false);
     navigate("/", { replace: true });
     try {
       await logout();
     } catch {
-      // The local session is cleared by the provider even if the request fails.
+      setLogoutError("خروج از حساب انجام نشد. اتصال را بررسی کنید و دوباره تلاش کنید.");
     }
   }
 
@@ -88,7 +101,7 @@ export function Header() {
           />
           <span className="whitespace-nowrap">
             <span className="block text-lg font-bold leading-tight text-brand-900">صبا ترخیص</span>
-            <span className="block text-[11px] text-slate-500">خدمات تخصصی ترخیص کالا</span>
+            <span className="block text-[11px] text-slate-600">{tagline}</span>
           </span>
         </Link>
 
@@ -213,6 +226,14 @@ export function Header() {
               </Link>
             )}
           </div>
+        </div>
+      ) : null}
+
+      {logoutError ? (
+        <div className="mx-auto max-w-7xl px-4 pb-3 lg:px-8">
+          <p role="alert" className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+            {logoutError}
+          </p>
         </div>
       ) : null}
     </header>

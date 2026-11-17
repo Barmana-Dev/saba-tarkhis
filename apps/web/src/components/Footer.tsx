@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import { api } from "../lib/api";
 import { scrollToTop } from "../lib/scroll";
 
@@ -16,6 +16,8 @@ export function Footer() {
   const phone = data?.["contact.phone"] ?? "نیازمند تأیید کارفرما";
   const email = data?.["contact.email"] ?? "نیازمند تأیید کارفرما";
   const address = data?.["contact.address"] ?? "نیازمند تأیید کارفرما";
+  const hours = data?.["contact.hours"];
+  const instagram = data?.["contact.instagram"];
   const notice = data?.["site.notice"];
 
   return (
@@ -82,6 +84,28 @@ export function Footer() {
               <MapPin className="lead-icon-sm size-3.5 shrink-0" aria-hidden />
               <span>{address}</span>
             </li>
+            {hours ? (
+              <li className="flex items-start gap-2">
+                <Clock className="lead-icon-sm size-3.5 shrink-0" aria-hidden />
+                <span>{hours}</span>
+              </li>
+            ) : null}
+            {instagram ? (
+              <li className="break-all">
+                {/^https?:\/\//.test(instagram) ? (
+                  <a
+                    href={instagram}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="transition-colors hover:text-white"
+                  >
+                    {instagram}
+                  </a>
+                ) : (
+                  instagram
+                )}
+              </li>
+            ) : null}
           </ul>
           <p className="mt-4 text-[11px] text-slate-300">
             اطلاعات تماس پس از تأیید کارفرما در این بخش منتشر می‌شود.

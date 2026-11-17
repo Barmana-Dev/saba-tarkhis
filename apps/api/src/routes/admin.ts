@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import type { Prisma } from "@prisma/client";
+import type { Prisma, RequestStatus } from "@prisma/client";
 import { badRequest, conflict, notFound } from "../lib/errors";
 import { ok, parsePage } from "../lib/http";
 import { prisma } from "../lib/prisma";
@@ -248,7 +248,15 @@ adminRouter.patch(
     const row = await loadAccessibleRequest(req.params.id, user);
     const { quoteNote, markAsQuoted } = req.body as z.infer<typeof quoteSchema>;
 
-    const canQuote = row.status === "SUBMITTED" || row.status === "UNDER_REVIEW" || row.status === "QUOTED";
+    // Mirrors statusTransitions: every status that may move to QUOTED can also
+    // record the quote that causes that move.
+    const quotableStatuses: RequestStatus[] = [
+      "SUBMITTED",
+      "UNDER_REVIEW",
+      "NEED_MORE_INFO",
+      "QUOTED",
+    ];
+    const canQuote = quotableStatuses.includes(row.status);
     if (markAsQuoted && !canQuote) {
       throw badRequest("در این وضعیت امکان ثبت پیشنهاد جدید وجود ندارد.");
     }
@@ -532,13 +540,16 @@ const slugSchema = z
   .max(80)
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "نامک فقط شامل حروف کوچک انگلیسی، عدد و خط تیره باشد.");
 
+// No `.default()` here: defaults would also fire for a PATCH that omits the
+// field, silently flipping publication state or resetting the ordering. The
+// create handlers apply the defaults themselves.
 const serviceSchema = z.object({
   slug: slugSchema,
   title: z.string().trim().min(2, "عنوان خدمت را وارد کنید.").max(160),
   excerpt: z.string().trim().min(10, "توضیح کوتاه را کامل‌تر بنویسید.").max(400),
   body: z.string().trim().min(20, "متن خدمت را کامل‌تر بنویسید.").max(20000),
-  isPublished: z.boolean().optional().default(false),
-  sortOrder: z.coerce.number().int().min(0).max(999).optional().default(0),
+  isPublished: z.boolean().optional(),
+  sortOrder: z.coerce.number().int().min(0).max(999).optional(),
 });
 
 adminRouter.get(
@@ -557,7 +568,14 @@ adminRouter.post(
   requireRole("ADMIN"),
   validateBody(serviceSchema),
   asyncHandler(async (req, res) => {
-    const created = await prisma.service.create({ data: req.body });
+    const payload = req.body as z.infer<typeof serviceSchema>;
+    const created = await prisma.service.create({
+      data: {
+        ...payload,
+        isPublished: payload.isPublished ?? false,
+        sortOrder: payload.sortOrder ?? 0,
+      },
+    });
     await audit({
       actorId: req.user!.id,
       action: "SERVICE_CREATED",
@@ -609,11 +627,31 @@ const articleSchema = z.object({
   body: z.string().trim().min(20, "متن مقاله را کامل‌تر بنویسید.").max(40000),
   categoryId: z.string().trim().max(40).nullable().optional(),
   coverImage: z.string().trim().max(500).nullable().optional(),
-  status: z.enum(["DRAFT", "PUBLISHED"]).optional().default("DRAFT"),
+  status: z.enum(["DRAFT", "PUBLISHED"]).optional(),
   sourceName: z.string().trim().max(160).nullable().optional(),
   sourceUrl: z.string().trim().max(500).nullable().optional(),
-  reviewedAt: z.string().trim().max(40).nullable().optional(),
+  reviewedAt: z
+    .string()
+    .trim()
+    .max(40)
+    .refine((value) => value === "" || !Number.isNaN(Date.parse(value)), {
+      message: "تاریخ بازبینی معتبر نیست.",
+    })
+    .nullable()
+    .optional(),
 });
+
+/** Fails with a field-friendly 400 instead of an unhandled foreign-key error. */
+async function assertCategoryExists(categoryId: string | null | undefined) {
+  if (!categoryId) return;
+  const category = await prisma.articleCategory.findUnique({
+    where: { id: categoryId },
+    select: { id: true },
+  });
+  if (!category) {
+    throw badRequest("دسته‌بندی انتخاب‌شده وجود ندارد.");
+  }
+}
 
 adminRouter.get(
   "/articles",
@@ -633,10 +671,13 @@ adminRouter.post(
   validateBody(articleSchema),
   asyncHandler(async (req, res) => {
     const payload = req.body as z.infer<typeof articleSchema>;
+    await assertCategoryExists(payload.categoryId);
+    const status = payload.status ?? "DRAFT";
     const created = await prisma.article.create({
       data: {
         ...payload,
-        publishedAt: payload.status === "PUBLISHED" ? new Date() : null,
+        status,
+        publishedAt: status === "PUBLISHED" ? new Date() : null,
         reviewedAt: payload.reviewedAt ? new Date(payload.reviewedAt) : null,
       },
     });
@@ -658,6 +699,7 @@ adminRouter.patch(
     const payload = req.body as Partial<z.infer<typeof articleSchema>>;
     const existing = await prisma.article.findUnique({ where: { id: req.params.id } });
     if (!existing) throw notFound("مقاله موردنظر یافت نشد.");
+    if (payload.categoryId !== undefined) await assertCategoryExists(payload.categoryId);
 
     const updated = await prisma.article.update({
       where: { id: existing.id },
@@ -720,11 +762,12 @@ adminRouter.get(
   }),
 );
 
+// Defaults are applied in the create handler only (see serviceSchema).
 const faqSchema = z.object({
   question: z.string().trim().min(5, "پرسش را وارد کنید.").max(300),
   answer: z.string().trim().min(10, "پاسخ را کامل‌تر بنویسید.").max(5000),
-  sortOrder: z.coerce.number().int().min(0).max(999).optional().default(0),
-  isPublished: z.boolean().optional().default(true),
+  sortOrder: z.coerce.number().int().min(0).max(999).optional(),
+  isPublished: z.boolean().optional(),
 });
 
 adminRouter.get(
@@ -741,7 +784,14 @@ adminRouter.post(
   requireRole("ADMIN"),
   validateBody(faqSchema),
   asyncHandler(async (req, res) => {
-    const created = await prisma.faq.create({ data: req.body });
+    const payload = req.body as z.infer<typeof faqSchema>;
+    const created = await prisma.faq.create({
+      data: {
+        ...payload,
+        sortOrder: payload.sortOrder ?? 0,
+        isPublished: payload.isPublished ?? true,
+      },
+    });
     await audit({
       actorId: req.user!.id,
       action: "FAQ_CREATED",

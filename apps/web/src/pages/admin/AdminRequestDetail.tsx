@@ -30,6 +30,7 @@ export function AdminRequestDetail() {
   const [nextStatus, setNextStatus] = useState<RequestStatus | "">("");
   const [reason, setReason] = useState("");
   const [expertId, setExpertId] = useState<string>("");
+  const [syncedExpertKey, setSyncedExpertKey] = useState<string | null>(null);
   const [quoteNote, setQuoteNote] = useState("");
   const [markAsQuoted, setMarkAsQuoted] = useState(true);
   const [comment, setComment] = useState("");
@@ -42,6 +43,16 @@ export function AdminRequestDetail() {
     enabled: Boolean(id),
     retry: false,
   });
+
+  // Mirror the server-side assignment into the select (also after each save), so
+  // saving without a change can never send an empty expert id.
+  const expertKey = detail.data
+    ? `${detail.data.id}:${detail.data.assignedExpertId ?? ""}`
+    : null;
+  if (expertKey && expertKey !== syncedExpertKey) {
+    setSyncedExpertKey(expertKey);
+    setExpertId(detail.data!.assignedExpertId ?? "");
+  }
 
   const experts = useQuery({
     queryKey: ["experts"],
@@ -143,7 +154,7 @@ export function AdminRequestDetail() {
                 ["موبایل مشتری", data.customer?.mobile ?? "—"],
                 ["ایمیل مشتری", data.customer?.email ?? "—"],
                 ["نوع متقاضی", data.applicantType === "COMPANY" ? "شخص حقوقی" : "شخص حقیقی"],
-                ["نام متقاضی", data.applicantName || "—"],
+                ["نام متقاضی", data.applicantName || data.customer?.fullName || "—"],
                 ["رویه", procedureLabels[data.procedureType] ?? data.procedureType],
                 ["روش حمل", transportLabels[data.transportMode] ?? data.transportMode],
                 ["کشور مبدأ / مقصد", `${data.originCountry || "—"} / ${data.destinationCountry || "—"}`],
@@ -354,7 +365,7 @@ export function AdminRequestDetail() {
               </h2>
               <Select
                 className="mt-3"
-                value={expertId || data.assignedExpertId || ""}
+                value={expertId}
                 onChange={(event) => setExpertId(event.target.value)}
                 aria-label="انتخاب کارشناس"
               >

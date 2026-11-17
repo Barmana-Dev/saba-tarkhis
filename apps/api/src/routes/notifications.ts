@@ -23,15 +23,29 @@ notificationsRouter.get(
   "/",
   asyncHandler(async (req, res) => {
     const userId = req.user!.id;
-    const [items, unreadCount] = await Promise.all([
+    const [recent, unreadItems, unreadCount] = await Promise.all([
       prisma.notification.findMany({
         where: { userId },
         orderBy: { createdAt: "desc" },
         take: 20,
         select: listSelect,
       }),
+      // Unread items are listed first so an old unread notification can never be
+      // pushed out of the feed by newer read ones (the counter would lie).
+      prisma.notification.findMany({
+        where: { userId, readAt: null },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+        select: listSelect,
+      }),
       prisma.notification.count({ where: { userId, readAt: null } }),
     ]);
+
+    const seen = new Set(unreadItems.map((item) => item.id));
+    const items = [
+      ...unreadItems,
+      ...recent.filter((item) => !seen.has(item.id)),
+    ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
     return ok(res, { items, unreadCount });
   }),

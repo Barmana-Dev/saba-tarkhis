@@ -26,7 +26,7 @@ function LegalDocument({
       </nav>
 
       <h1 className="text-3xl font-bold text-brand-900">{title}</h1>
-      <p className="mt-2 text-xs text-slate-500">نسخه موقت — آبان ۱۴۰۵</p>
+      <p className="mt-2 text-xs text-slate-600">نسخه موقت — آبان ۱۴۰۵</p>
 
       <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-6 text-amber-900">
         این متن <strong>موقت</strong> است و فقط برای راه‌اندازی اولیهٔ سامانه نوشته شده؛ پیش از استفاده با
@@ -48,7 +48,7 @@ function LegalDocument({
         ))}
       </div>
 
-      <p className="mt-10 text-xs leading-7 text-slate-500">
+      <p className="mt-10 text-xs leading-7 text-slate-600">
         برای هر پرسش دربارهٔ این متن، از صفحهٔ{" "}
         <Link to="/contact" className="text-accent-700 underline underline-offset-2">
           تماس با ما

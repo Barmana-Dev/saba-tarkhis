@@ -81,7 +81,7 @@ export function DocumentsGuide() {
         </div>
       </div>
 
-      <p className="mt-4 text-xs text-slate-500" role="status">
+      <p className="mt-4 text-xs text-slate-600" role="status">
         {filtered.length.toLocaleString("fa-IR")} مدرک نمایش داده می‌شود.
       </p>
 

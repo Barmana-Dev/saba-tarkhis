@@ -229,7 +229,9 @@ server {
     add_header X-Frame-Options "DENY" always;
     add_header Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'" always;
 
-    client_max_body_size 6m;
+    # The form accepts up to 4 files of MAX_UPLOAD_MB (5 MB) each plus the JSON
+    # payload, so the body cap covers the whole allowed request (25 MB).
+    client_max_body_size 25m;
 
     location /api/ {
         proxy_pass http://127.0.0.1:4000;
@@ -259,8 +261,9 @@ server {
 }
 ```
 
-`client_max_body_size` کمی بزرگ‌تر از `MAX_UPLOAD_MB` باشد تا خطای حجم از API و با پیام فارسی
-برگردد. CSP را ابتدا در staging بررسی کنید.
+`client_max_body_size` باید کل حجم مجاز یک درخواست (۴ فایل × `MAX_UPLOAD_MB` + فیلدهای متنی) را
+پوشش دهد، نه فقط یک فایل؛ در غیر این صورت ترکیب فایل‌های مجاز در لایهٔ پروکسی رد می‌شود. اگر
+`MAX_UPLOAD_MB` یا `MAX_CASE_UPLOAD_MB` را تغییر دادید، این مقدار را هم به‌روز کنید. CSP را ابتدا در staging بررسی کنید.
 
 ## ۶) اسکن بدافزار (ClamAV) — Fail Closed
 
