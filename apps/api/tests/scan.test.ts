@@ -101,6 +101,12 @@ describe("document malware scanning", () => {
       `/api/v1/requests/${requestId}/documents/${documentId}/download`,
     );
     expect(download.status).toBe(404);
+
+    // The UI must not advertise a link for a file the server refuses to serve.
+    const detail = await customer.agent.get(`/api/v1/requests/${requestId}`);
+    expect(detail.body.data.documents[0].scanStatus).toBe("PENDING");
+    expect(detail.body.data.documents[0].canDownload).toBe(false);
+    expect(detail.body.data.documents[0].downloadUrl).toBeNull();
   });
 
   it("maps scanner exit codes and unreachable binaries", async () => {

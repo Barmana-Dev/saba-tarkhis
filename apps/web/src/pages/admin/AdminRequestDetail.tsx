@@ -6,6 +6,7 @@ import { api, ApiError, apiUrl } from "../../lib/api";
 import type { ClearanceRequest, RequestStatus } from "../../lib/types";
 import {
   currencyLabels,
+  documentScanNotice,
   formatBytes,
   formatDate,
   formatDateTime,
@@ -213,13 +214,20 @@ export function AdminRequestDetail() {
                         {formatBytes(document.fileSize)} · {formatDate(document.createdAt)}
                       </span>
                     </span>
-                    <a
-                      href={apiUrl(document.downloadUrl)}
-                      className="flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-[11px] text-brand-700 hover:bg-brand-50"
-                    >
-                      <Download className="size-3.5" aria-hidden />
-                      دریافت
-                    </a>
+                    {document.canDownload && document.downloadUrl ? (
+                      <a
+                        href={apiUrl(document.downloadUrl)}
+                        className="flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-[11px] text-brand-700 hover:bg-brand-50"
+                      >
+                        <Download className="size-3.5" aria-hidden />
+                        دریافت
+                      </a>
+                    ) : (
+                      <span className="flex shrink-0 items-center gap-1 rounded-md bg-slate-50 px-2 py-1 text-[11px] text-slate-500">
+                        <ShieldAlert className="size-3.5" aria-hidden />
+                        {documentScanNotice(document.scanStatus)}
+                      </span>
+                    )}
                   </li>
                 ))}
               </ul>

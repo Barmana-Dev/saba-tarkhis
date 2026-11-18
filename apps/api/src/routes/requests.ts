@@ -213,7 +213,14 @@ export function serializeDocument(document: RequestDetailRow["documents"][number
     mimeType: document.mimeType,
     fileSize: document.fileSize,
     createdAt: document.createdAt,
-    downloadUrl: `/api/v1/requests/${document.requestId}/documents/${document.id}/download`,
+    // The download route serves only scanned-clean files, so an unscanned
+    // document must not advertise a link that ends in a 404.
+    scanStatus: document.scanStatus,
+    canDownload: document.scanStatus === "CLEAN",
+    downloadUrl:
+      document.scanStatus === "CLEAN"
+        ? `/api/v1/requests/${document.requestId}/documents/${document.id}/download`
+        : null,
   };
 }
 

@@ -1,4 +1,4 @@
-import type { RequestStatus } from "./types";
+import type { DocumentScanStatus, RequestStatus } from "./types";
 
 const persianDigits = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
 
@@ -84,3 +84,22 @@ export const contactStatusLabels: Record<string, string> = {
   IN_PROGRESS: "در حال بررسی",
   RESOLVED: "رسیدگی‌شده",
 };
+
+/**
+ * The download route serves only scanned-clean documents, so every other state
+ * needs a readable reason instead of a link that would end in 404.
+ */
+export function documentScanNotice(scanStatus: DocumentScanStatus): string {
+  switch (scanStatus) {
+    case "CLEAN":
+      return "آماده دریافت";
+    case "PENDING":
+      return "در انتظار اسکن بدافزار";
+    case "INFECTED":
+      return "به دلیل آلودگی مسدود شده است";
+    case "ERROR":
+      return "اسکن بدافزار انجام نشد";
+    default:
+      return "اسکن بدافزار انجام نشده است";
+  }
+}

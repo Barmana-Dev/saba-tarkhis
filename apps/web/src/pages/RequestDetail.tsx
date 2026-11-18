@@ -14,6 +14,7 @@ import { api, ApiError, apiUrl } from "../lib/api";
 import type { ClearanceRequest } from "../lib/types";
 import {
   currencyLabels,
+  documentScanNotice,
   formatBytes,
   formatDate,
   formatDateTime,
@@ -149,9 +150,9 @@ export function RequestDetail() {
 
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-card">
         <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
+          <div className="min-w-0">
             <p className="num text-xs text-slate-500">{data.trackingCode}</p>
-            <h2 className="mt-1 text-lg font-bold text-brand-900">{data.goodsDescription}</h2>
+            <h2 className="mt-1 text-lg font-bold text-brand-900 [overflow-wrap:anywhere]">{data.goodsDescription}</h2>
             <p className="mt-1 text-[11px] text-slate-500">
               ثبت: {formatDateTime(data.createdAt)} · آخرین بروزرسانی: {formatDateTime(data.updatedAt)}
             </p>
@@ -162,34 +163,34 @@ export function RequestDetail() {
         {data.quoteNote ? (
           <div className="mt-4 rounded-xl border border-indigo-100 bg-indigo-50/60 p-4">
             <p className="text-xs font-semibold text-indigo-900">پیشنهاد خدمات (غیررسمی)</p>
-            <p className="mt-1.5 whitespace-pre-line text-sm leading-7 text-indigo-900/90">{data.quoteNote}</p>
+            <p className="mt-1.5 whitespace-pre-line text-sm leading-7 text-indigo-900/90 [overflow-wrap:anywhere]">{data.quoteNote}</p>
             <p className="mt-2 text-[11px] text-indigo-700/80">
               این متن برآورد هماهنگی است و مبنای رسمی محاسبه حقوق گمرکی نیست.
             </p>
           </div>
         ) : null}
 
-        <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
+        <dl className="mt-5 grid gap-4 text-sm [&>*]:min-w-0 sm:grid-cols-2 lg:grid-cols-3">
           {facts.map(([label, value]) => (
             <div key={label}>
               <dt className="text-[11px] text-slate-500">{label}</dt>
-              <dd className="mt-0.5 break-words text-[13px] text-slate-800">{value}</dd>
+              <dd className="mt-0.5 text-[13px] text-slate-800 [overflow-wrap:anywhere]">{value}</dd>
             </div>
           ))}
         </dl>
 
         {data.cargoStatus || data.notes ? (
-          <div className="mt-5 grid gap-3 border-t border-slate-100 pt-4 text-xs leading-6 text-slate-600 sm:grid-cols-2">
+          <div className="mt-5 grid gap-3 border-t border-slate-100 pt-4 text-xs leading-6 text-slate-600 [&>*]:min-w-0 sm:grid-cols-2">
             {data.cargoStatus ? (
               <div>
                 <p className="font-medium text-slate-700">وضعیت فعلی کالا</p>
-                <p className="mt-1 whitespace-pre-line">{data.cargoStatus}</p>
+                <p className="mt-1 whitespace-pre-line [overflow-wrap:anywhere]">{data.cargoStatus}</p>
               </div>
             ) : null}
             {data.notes ? (
               <div>
                 <p className="font-medium text-slate-700">توضیحات شما</p>
-                <p className="mt-1 whitespace-pre-line">{data.notes}</p>
+                <p className="mt-1 whitespace-pre-line [overflow-wrap:anywhere]">{data.notes}</p>
               </div>
             ) : null}
           </div>
@@ -243,7 +244,7 @@ export function RequestDetail() {
         );
       })()}
 
-      <div className="mt-5 grid gap-5 lg:grid-cols-2">
+      <div className="mt-5 grid gap-5 [&>*]:min-w-0 lg:grid-cols-2">
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-card">
           <h2 className="flex items-center gap-2 text-sm font-bold text-brand-900">
             <CheckCircle2 className="size-4 text-accent-600" aria-hidden />
@@ -255,7 +256,7 @@ export function RequestDetail() {
                 <span className="absolute -start-[5px] top-1.5 size-2 rounded-full bg-brand-500" aria-hidden />
                 <p className="text-xs font-semibold text-brand-900">{entry.toStatusLabel}</p>
                 <p className="mt-0.5 text-[11px] text-slate-600">{formatDateTime(entry.createdAt)}</p>
-                {entry.reason ? <p className="mt-1 text-[11px] leading-5 text-slate-600">{entry.reason}</p> : null}
+                {entry.reason ? <p className="mt-1 text-[11px] leading-5 text-slate-600 [overflow-wrap:anywhere]">{entry.reason}</p> : null}
               </li>
             ))}
           </ol>
@@ -284,13 +285,20 @@ export function RequestDetail() {
                       {formatBytes(document.fileSize)} · {formatDate(document.createdAt)}
                     </span>
                   </span>
-                  <a
-                    href={apiUrl(document.downloadUrl)}
-                    className="flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-[11px] text-brand-700 hover:bg-brand-50"
-                  >
-                    <Download className="size-3.5" aria-hidden />
-                    دریافت
-                  </a>
+                  {document.canDownload && document.downloadUrl ? (
+                    <a
+                      href={apiUrl(document.downloadUrl)}
+                      className="flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-[11px] text-brand-700 hover:bg-brand-50"
+                    >
+                      <Download className="size-3.5" aria-hidden />
+                      دریافت
+                    </a>
+                  ) : (
+                    <span className="flex shrink-0 items-center gap-1 rounded-md bg-slate-50 px-2 py-1 text-[11px] text-slate-500">
+                      <ShieldAlert className="size-3.5" aria-hidden />
+                      {documentScanNotice(document.scanStatus)}
+                    </span>
+                  )}
                 </li>
               ))}
             </ul>
@@ -342,7 +350,7 @@ export function RequestDetail() {
                   }`}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-xs font-semibold text-slate-800">
+                    <p className="text-xs font-semibold text-slate-800 [overflow-wrap:anywhere]">
                       {item.author.fullName}
                       <span className="ms-2 rounded-full bg-white px-2 py-0.5 text-[10px] font-normal text-slate-500">
                         {fromStaff ? "کارشناس صبا ترخیص" : "شما"}
@@ -350,7 +358,7 @@ export function RequestDetail() {
                     </p>
                     <p className="text-[11px] text-slate-600">{formatDateTime(item.createdAt)}</p>
                   </div>
-                  <p className="mt-2 whitespace-pre-line text-xs leading-7 text-slate-700">{item.body}</p>
+                  <p className="mt-2 whitespace-pre-line text-xs leading-7 text-slate-700 [overflow-wrap:anywhere]">{item.body}</p>
                 </li>
               );
             })}

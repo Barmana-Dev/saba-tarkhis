@@ -78,7 +78,7 @@ export function Header() {
         scrolled ? "bg-white/90 shadow-[0_12px_32px_-20px_rgba(15,40,60,0.55)]" : "bg-white/95",
       )}
     >
-      <div className="mx-auto flex h-18 max-w-7xl items-center justify-between gap-4 px-4 py-3 lg:px-8">
+      <div className="mx-auto flex min-h-18 max-w-7xl items-center justify-between gap-2 px-4 py-3 sm:gap-4 lg:px-8">
         <Link
           to="/"
           onClick={(event) => {
@@ -88,7 +88,7 @@ export function Header() {
               scrollToTop();
             }
           }}
-          className="flex shrink-0 items-center gap-3"
+          className="flex min-w-0 items-center gap-3 xl:shrink-0"
           aria-label="صبا ترخیص — صفحه اصلی"
         >
           <img
@@ -99,9 +99,11 @@ export function Header() {
             className="h-10 w-auto shrink-0"
             aria-hidden
           />
-          <span className="whitespace-nowrap">
-            <span className="block text-lg font-bold leading-tight text-brand-900">صبا ترخیص</span>
-            <span className="block text-[11px] text-slate-600">{tagline}</span>
+          <span className="min-w-0">
+            <span className="block truncate text-lg font-bold leading-tight text-brand-900">صبا ترخیص</span>
+            {/* The tagline is editable from settings, so it must wrap instead of
+                pushing the mobile menu button past the viewport. */}
+            <span className="block text-[11px] leading-tight text-slate-600 wrap-anywhere">{tagline}</span>
           </span>
         </Link>
 
@@ -162,7 +164,7 @@ export function Header() {
 
         <button
           type="button"
-          className="rounded-lg border border-slate-200 p-2 text-slate-700 xl:hidden"
+          className="shrink-0 rounded-lg border border-slate-200 p-2 text-slate-700 xl:hidden"
           onClick={() => setOpen((value) => !value)}
           aria-expanded={open}
           aria-controls="mobile-menu"

@@ -89,13 +89,17 @@ export type RequestSummary = {
   _count?: { documents: number; comments: number };
 };
 
+export type DocumentScanStatus = "PENDING" | "CLEAN" | "INFECTED" | "ERROR" | "SKIPPED";
+
 export type RequestDocument = {
   id: string;
   fileName: string;
   mimeType: string;
   fileSize: number;
   createdAt: string;
-  downloadUrl: string;
+  scanStatus: DocumentScanStatus;
+  canDownload: boolean;
+  downloadUrl: string | null;
 };
 
 export type RequestComment = {

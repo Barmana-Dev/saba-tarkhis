@@ -1,12 +1,33 @@
 import { z } from "zod";
 
-const mobilePattern = /^0?9[0-9۰-۹]{9}$/;
+/**
+ * Same rule as the API parser: Persian and Arabic digits, separators and the
+ * +98 / 0098 / 98 prefixes all describe one number. Normalising before the
+ * regex keeps the form from rejecting what the server would accept.
+ */
+const digitGroups = /[۰-۹٠-٩]/g;
+const allDigits = "۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩";
+
+export function normalizeMobile(input: string): string {
+  const converted = input
+    .replace(digitGroups, (digit) => String(allDigits.indexOf(digit) % 10))
+    .replace(/[\s\-()]/g, "");
+
+  if (converted.startsWith("+98")) return `0${converted.slice(3)}`;
+  if (converted.startsWith("0098")) return `0${converted.slice(4)}`;
+  if (converted.startsWith("98") && converted.length === 12) return `0${converted.slice(2)}`;
+  if (converted.startsWith("9") && converted.length === 10) return `0${converted}`;
+  return converted;
+}
 
 export const mobileField = z
   .string()
   .trim()
   .min(1, "شماره موبایل را وارد کنید.")
-  .regex(mobilePattern, "شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد.");
+  .transform(normalizeMobile)
+  .refine((value) => /^09\d{9}$/.test(value), {
+    message: "شماره موبایل باید با ۰۹ شروع شود و ۱۱ رقم باشد.",
+  });
 
 export const passwordField = z
   .string()
